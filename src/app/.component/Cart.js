@@ -1,14 +1,17 @@
 'use client'
-import { Drama, ShoppingBag } from "lucide-react"
 import { useEffect, useState } from "react"
-import { X,Minus ,Plus } from "lucide-react"
+import { X,ShoppingBag } from "lucide-react"
 import useStoreData from "@/app/lib/useStoreData";
+import { useRouter } from 'next/navigation';
 import axios from "axios";
 
 const Cart = () => {
 const [openCart ,setOpenCart] = useState(false);
-const {cart,toggleCart} = useStoreData();
-const [data ,setData ] = useState([])
+const {cart} = useStoreData();
+const [data ,setData ] = useState([]);
+const [value, setValue] = useState([]);
+const [totalPrice ,setTotalPrice] = useState("");
+const router = useRouter();
 
 const getData = async (string)=>{
     try{
@@ -25,8 +28,8 @@ const getData = async (string)=>{
       }catch (e){
         console.log(e.message);
       } 
-  }
-  
+}
+
 useEffect(()=>{
   const storageData = localStorage.getItem("name");
   const jsonObject= JSON.parse(storageData);
@@ -34,6 +37,25 @@ useEffect(()=>{
   const string = idData.join(',');
   getData(string);
 },[cart])
+
+  useEffect(() => {
+    const storageData = localStorage.getItem("name");
+    if (!storageData || data.length === 0) return;
+
+    const jsonObject = JSON.parse(storageData);
+
+    const merged = data.map((item) => {
+      const match = jsonObject.find((q) => q.id === item.id);
+      return { ...item, ...match };
+    });
+    console.log(merged);
+    const price = merged.reduce((totalPrice, item) =>{
+         return totalPrice + Number(item.price) * item.qty;
+    })
+    setTotalPrice(price);
+    setValue(merged);
+  }, [data]);  
+
 return (<>
 <div className="relative">
   <div className="text-right max-w-7xl mx-auto">
@@ -53,7 +75,7 @@ return (<>
   )}
   
   {/* Sliding Cart */}
-  <div className={`fixed top-0 right-0 h-full w-[300px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
+  <div className={`fixed cursor-default top-0 right-0 h-full w-[300px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
     <div className="p-4">
         {/* header */}
       <div className="bg-blue-600 rounded-sm text-white p-4 flex items-center justify-between">
@@ -72,26 +94,16 @@ return (<>
           <p>Your cart is empty</p>
         </div>
         </>) :(<>
-          {data.map((value,id)=>(
-            <div onClick={toggleCart} key={id} className="max-h-[400px] overflow-y-auto">
+          {value.map((value,id)=>(
+            <div key={id} className="max-h-[400px] overflow-y-auto">
             <div className="py-2 space-y-3">
                 <div  className="flex gap-3 bg-gray-50 rounded-md  hover:bg-gray-100 transition-colors group" >
                     <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-white">
                         <img  src={value?.images[0]?.src || "image1.jpg"}  alt="23"  className="w-full h-full object-cover"/>
                     </div>
-                    <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-800 text-sm truncate">{value.name}</h4>
-                        <p className="text-blue-600 font-semibold text-sm mt-1">{value.price}</p>
-                        
-                        <div className="flex items-center gap-2 mt-2">
-                            <button className="w-6 h-6 cursor-pointer rounded-md bg-white hover:bg-gray-200 flex items-center justify-center transition-colors border border-gray-300">
-                                <Minus className="w-3 h-3 text-gray-600" />
-                            </button>
-                            <span className="text-sm font-medium text-gray-700 w-6 text-center">23</span>
-                            <button className="w-6 h-6 cursor-pointer rounded-md bg-white hover:bg-gray-200 flex items-center justify-center transition-colors border border-gray-300">
-                                <Plus className="w-3 h-3 text-gray-600" />
-                            </button>
-                        </div>
+                    <div className="grid grid-rows-2">
+                        <h4 className="font-medium text-gray-800 text-sm leading-4 line-clamp-3">{value.name}</h4>
+                        <p className="text-blue-600 font-semibold text-sm mt-1">{value.price} * {value.qty} = {value.price * value.qty}</p>
                     </div>
                     <button className="cursor-pointer self-start opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 text-red-500 rounded-full p-1.5">
                         <X className="w-4 h-4" />
@@ -104,11 +116,18 @@ return (<>
       <div className="border-t border-gray-200 py-2 bg-gray-50">
         <div className="flex items-center justify-between mb-3">
             <span className="text-gray-600 font-medium">Total:</span>
-            <span className="text-2xl font-bold text-gray-800">$23</span>
+            <span className="text-2xl font-bold text-gray-800">{totalPrice}</span>
         </div>
-        <button className="w-full bg-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 hover:shadow-lg">
-            Checkout
-        </button>
+        <div className="grid grid-cols-2 gap-4" >
+          <button  onClick={()=>router.push("/cart")}
+          className="w-full hover:bg-blue-600 cursor-pointer bg-white text-black hover:text-white hover:border-blue-600 border-gray-400 border-2 py-2 rounded-xl font-semibold duration-300 ">
+              View Cart
+          </button>
+          <button onClick={()=>router.push("/checkout")}
+          className="w-full bg-blue-600 cursor-pointer text-white py-2 rounded-xl font-semibold  transition-all duration-300 hover:shadow-lg">
+              Checkout
+          </button>
+        </div>
       </div>
     </div>
   </div>

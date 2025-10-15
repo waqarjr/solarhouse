@@ -5,6 +5,7 @@ import { Heart, Minus, Plus, Facebook, Twitter } from 'lucide-react'
 import axios from 'axios'
 import Link from 'next/link'
 import Image from 'next/image'
+import useStoreData from '@/app/lib/useStoreData'
 
 const ProductPage = () => {
     const { shopid } = useParams()
@@ -12,6 +13,8 @@ const ProductPage = () => {
     const [selectedImage, setSelectedImage] = useState(0)
     const [isWishlisted, setIsWishlisted] = useState(false)
     const [apiProduct , setApiProducts] = useState([]);
+    const {toggleCart} = useStoreData();
+
     const product = {
         features: [
             "Advanced computer equipment",
@@ -43,16 +46,34 @@ const ProductPage = () => {
 
     const handleQuantityChange = (action) => {
         if (action === 'increment') {
-            setQuantity(prev => prev + 1)
+            console.log(quantity,"ww");
+            // setQuantity(prev => prev + 1);
         } else if (action === 'decrement' && quantity > 1) {
-            setQuantity(prev => prev - 1)
+            setQuantity(prev => prev - 1);
+            console.log("decrement");
         }
     }
 
-    const handleAddToCart = () => {
-        console.log(`Added ${quantity} items to cart`)
-        // Add your cart logic here
-    }
+    const handleAddToCart = (id) => {
+      if(localStorage.getItem("name")) {
+        const existingData = JSON.parse(localStorage.getItem("name"));
+        const filter =  existingData.filter((v)=> v.id === id);
+        if(filter.length) { 
+          filter[0].qty = quantity;
+          localStorage.setItem("name", JSON.stringify(existingData));
+        }
+        else {
+          const updatedData = [...existingData, {id : id , qty: quantity}];
+          localStorage.setItem("name", JSON.stringify(updatedData));
+        }
+      } else {
+        const existingData =  [];
+        const updatedData = [...existingData, {id : id , qty: quantity}];
+        localStorage.setItem("name", JSON.stringify(updatedData));
+      }
+      toggleCart();
+    };
+    
     return (
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -125,18 +146,18 @@ const ProductPage = () => {
                         <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                             {/* Quantity Counter */}
                             <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
-                                <button  onClick={() => handleQuantityChange('decrement')} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1} >
+                                <button  onClick={() =>  {(quantity >1 ) &&  setQuantity(pre => pre - 1)}} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1} >
                                     <Minus className="w-5 h-5" />
-                                </button>
+                                </button>   
                                 <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">
-                                    {quantity}
+                                    { apiProduct[0]?.qty ||quantity}
                                 </span>
-                                <button onClick={() => handleQuantityChange('increment')} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors">
+                                <button onClick={() => setQuantity(pre => pre + 1)} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors">
                                     <Plus className="w-5 h-5" />
                                 </button>
                             </div>
                             {/* Add to Cart Button */}
-                            <button  onClick={handleAddToCart} className="flex-1 cursor-pointer bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg" >
+                            <button  onClick={()=> handleAddToCart(apiProduct[0]?.id)} className="flex-1 cursor-pointer bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg" >
                                 Add to Cart
                             </button>
                         </div>

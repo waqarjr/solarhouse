@@ -7,10 +7,10 @@ import axios from "axios";
 
 const Cart = () => {
 const [openCart ,setOpenCart] = useState(false);
-const {cart} = useStoreData();
+const {cart,toggleCart} = useStoreData();
 const [data ,setData ] = useState([]);
 const [value, setValue] = useState([]);
-const [totalPrice ,setTotalPrice] = useState("");
+const [totalPrice ,setTotalPrice] = useState(0);
 const router = useRouter();
 
 const getData = async (string)=>{
@@ -32,6 +32,7 @@ const getData = async (string)=>{
 
 useEffect(()=>{
   const storageData = localStorage.getItem("name");
+  if (!storageData) return;
   const jsonObject= JSON.parse(storageData);
   const idData = jsonObject.map((value)=> {return  value.id});
   const string = idData.join(',');
@@ -48,20 +49,31 @@ useEffect(()=>{
       const match = jsonObject.find((q) => q.id === item.id);
       return { ...item, ...match };
     });
-    console.log(merged);
-    const price = merged.reduce((totalPrice, item) =>{
-         return totalPrice + Number(item.price) * item.qty;
-    })
-    setTotalPrice(price);
+    const total = merged.reduce(
+      (sum, item) => sum + Number(item.price) * Number(item.qty),
+      0
+    );
+    setTotalPrice(total);
     setValue(merged);
   }, [data]);  
+
+  const remove = (id)=>{
+      const storageData = localStorage.getItem("name");
+      if (!storageData) return;
+      const jsonObject= JSON.parse(storageData);
+      const fil = jsonObject.filter(val => val.id !== id);
+      const string = JSON.stringify(fil);
+      localStorage.setItem("name",string);
+      toggleCart();
+  }
+
 
 return (<>
 <div className="relative">
   <div className="text-right max-w-7xl mx-auto">
     <button className=" relative cursor-pointer" onClick={() => setOpenCart(!openCart)}>
       <ShoppingBag />
-      {data.length && (
+      {value.length && (
           <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
             {data.length}
           </span>
@@ -105,7 +117,7 @@ return (<>
                         <h4 className="font-medium text-gray-800 text-sm leading-4 line-clamp-3">{value.name}</h4>
                         <p className="text-blue-600 font-semibold text-sm mt-1">{value.price} * {value.qty} = {value.price * value.qty}</p>
                     </div>
-                    <button className="cursor-pointer self-start opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 text-red-500 rounded-full p-1.5">
+                    <button onClick={()=>remove(value.id)} className="cursor-pointer self-start opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 text-red-500 rounded-full p-1.5">
                         <X className="w-4 h-4" />
                     </button>
                 </div>

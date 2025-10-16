@@ -3,10 +3,8 @@ import React from 'react'
 import { useState,useEffect } from 'react';
 import { ChevronDown, } from 'lucide-react';
 import axios from 'axios';
-import Link from 'next/link'
-
-const ItemsSection = () => {
-      
+const Items = () => {
+        
     const [category , setCategory] = useState(true);
     const [price , setPrice] = useState(true);
     const [ChangePrice , setChangePrice] = useState(60000)
@@ -18,7 +16,7 @@ const ItemsSection = () => {
     const getApiCategories = async ()=>{
       try{
         const response = await axios.get(
-        "https://solarhouse.pk/wp-json/wc/v3/products/categories?per_page=100",
+        "https://solarhouse.pk/wp-json/wc/v3/products/categories?parent=0",
         {
           auth: {
             username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
@@ -42,7 +40,8 @@ const ItemsSection = () => {
           }
         }
       );
-      setApiTags(response.data);
+      const retriveData = response.data.filter(tag => tag.count === 0)
+      setApiTags(retriveData );
       }catch(e){
         console.log(e.message);
       }
@@ -63,10 +62,10 @@ const ItemsSection = () => {
         <ul className={`grid gap-2  [&>li:hover]:text-black overflow-hidden transition-all duration-500 ease-out ${category ? "max-h-96 opacity-100 [&>*]:px-3 my-2" : "h-0 opacity-0"}`}>
           {apiCategories.map((value)=>(
             <li key={value.id} className='flex items-center  justify-between text-gray-600 cursor-pointer' >
-            <Link href={`/shop/${value.id}`} className='flex items-center' >
+            <div className='flex items-center' >
               <ChevronDown size={15} className='text-[5px] -rotate-90'/>
               <p>{value.name}</p>
-            </Link>
+            </div>
             <span>({value.count})</span>
           </li>
           ))}
@@ -92,7 +91,7 @@ const ItemsSection = () => {
               <ChevronDown className={`text-[14px] text-gray-400 ${tag ? "rotate-0" :"rotate-180"} transition-all duration-150 `}  />
             </div>
         </div>
-        <div className={` [&>*]:hover:text-black transition-all duration-200 ease-in-out ${tag ? "max-h-96 opacity-100 ":"h-0 opacity-0"}`} >
+        <div className={`[&>*]:hover:text-black transition-all duration-200 ease-in-out ${tag ? "max-h-96 opacity-100 ":"h-0 opacity-0"}`} >
           {apiTags.map((value)=>(
             <button key={value.id} className="m-1 border-2 rounded-3xl border-gray-300 px-3 py-1 text-center text-gray-600 hover:text-white hover:bg-blue-500 hover:border-blue-500 duration-150 cursor-pointer">
               {value.name}
@@ -100,7 +99,6 @@ const ItemsSection = () => {
           ))}
        </div>
     </div>
-  </>)
-}
+  </>)}
 
-export default ItemsSection
+export default Items

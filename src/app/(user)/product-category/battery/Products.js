@@ -5,16 +5,15 @@ import axios from 'axios'
 import { ChevronDown,Heart , Search, ShoppingCart } from 'lucide-react';
 import useStoreData from '@/app/lib/useStoreData';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation'; 
 
 const Products = () => {
-    const { shopid } = useParams()
-    console.log(shopid);
   const [totalProducts, setTotalProducts] = useState("");
   const [products , setProducts] = useState([]);
   const [showProduct , setShowProdct] = useState("12");
   const [changeDiv,setChangeDiv] = useState(false);
   const [select , setSelect] = useState('date,desc');
+
   const {toggleCart} = useStoreData();    
   const router = useRouter();
   const getData = async ()=>{

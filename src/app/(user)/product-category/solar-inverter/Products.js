@@ -5,22 +5,21 @@ import axios from 'axios'
 import { ChevronDown,Heart , Search, ShoppingCart } from 'lucide-react';
 import useStoreData from '@/app/lib/useStoreData';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation'; 
 
 const Products = () => {
-    const { shopid } = useParams()
-    console.log(shopid);
   const [totalProducts, setTotalProducts] = useState("");
   const [products , setProducts] = useState([]);
   const [showProduct , setShowProdct] = useState("12");
   const [changeDiv,setChangeDiv] = useState(false);
   const [select , setSelect] = useState('date,desc');
+
   const {toggleCart} = useStoreData();    
   const router = useRouter();
   const getData = async ()=>{
     try{
       const response = await axios.get(
-      `https://solarhouse.pk/wp-json/wc/v3/products?category=75&orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`,
+      `https://solarhouse.pk/wp-json/wc/v3/products?category=74&orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`,
       {
         auth: {
           username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 

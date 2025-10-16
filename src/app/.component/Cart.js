@@ -14,6 +14,7 @@ const [totalPrice ,setTotalPrice] = useState(0);
 const router = useRouter();
 
 const getData = async (string)=>{
+    if (!string) return;
     try{
         const response = await axios.get(
         `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,

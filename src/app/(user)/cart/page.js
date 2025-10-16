@@ -1,8 +1,8 @@
 "use client"
 import React, { useState,useEffect } from 'react';
 import { ChevronRight, Trash2 } from 'lucide-react';
-import useStoreData from "@/app/lib/useStoreData";
 import axios from 'axios';
+import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from 'next/navigation';
 
 const  Page = ()=> {
@@ -12,9 +12,9 @@ const  Page = ()=> {
   const [totalPrice ,setTotalPrice] = useState(0);
   const router = useRouter();
 
-
 const getData = async (string)=>{
-    try{
+  if (!string) return;
+  try{
         const response = await axios.get(
         `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
         {
@@ -26,16 +26,18 @@ const getData = async (string)=>{
       );
       setData(response.data);
       }catch (e){
-        console.log(e.message);
+        console.error(e.message);
       } 
-  }
+}
   
 useEffect(()=>{
-  const storageData = localStorage.getItem("name");
-  const jsonObject= JSON.parse(storageData);
-  const idData = jsonObject.map((value)=> {return  value.id});
-  const string = idData.join(',');
-  getData(string);
+  if( localStorage.getItem("name")){
+    const storageData = localStorage.getItem("name");
+    const jsonObject= JSON.parse(storageData);
+    const idData = jsonObject.map((value)=> {return  value.id});
+    const string = idData.join(','); 
+    getData(string);
+  }
 },[cart])
 
   useEffect(() => {

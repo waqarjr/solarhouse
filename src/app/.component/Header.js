@@ -18,19 +18,19 @@ const Header = () => {
         },
         {
             name: "Solar Inverter",
-            link: "/solar-inverter"
+            link: "/product-category/solar-inverter"
         },
         {
             name: "Solar Panels",
-            link: "/solar-panels"
+            link: "/product-category/solar-panels"
         },
         {
             name: "Lithium Batteries",
-            link: "/lithium-batteries"
+            link: "/product-category/battery"
         },
         {
             name: "Vp Protections",
-            link: "/vp-protections"
+            link: "/product-category/va-protectors"
         },
         {
             name: "Contact Us",
@@ -39,7 +39,6 @@ const Header = () => {
     ]
     
     const pathName = usePathname();
-
     return (
         <>
         <header className=' relative bg-white shadow-sm z-50'>
@@ -57,11 +56,8 @@ const Header = () => {
                             const isActive = pathName === v.link;
                             return (
                                 <li key={v.name}>
-                                    <Link 
-                                        className={`${isActive ? "text-blue-500" : "text-black"} font-semibold hover:text-blue-500 transition-colors`} 
-                                        href={v.link}
-                                    >
-                                        {v.name}
+                                    <Link  className={`${isActive ? "text-blue-500" : "text-black"} font-semibold hover:text-blue-500 transition-colors`} 
+                                        href={v.link}> {v.name}
                                     </Link>
                                 </li>
                             )
@@ -91,11 +87,8 @@ const Header = () => {
                             <Heart className='w-5 h-5' />
                             <ShoppingBag className='w-5 h-5' />
                         </div>
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className='ml-2 p-2 hover:text-blue-500 transition-colors'
-                            aria-label='Toggle menu'
-                        >
+                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className='ml-2 p-2 hover:text-blue-500 transition-colors' aria-label='Toggle menu'>
                             {isMobileMenuOpen ? <X className='w-6 h-6' /> : <Menu className='w-6 h-6' />}
                         </button>
                     </div>

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Home, ShoppingCart, Users, BarChart3, Settings,Menu, X } from 'lucide-react';
 import Link from "next/link";
+import "../globals.css";
 
 export default  function layout({children}) {
       const [isOpen, setIsOpen] = useState(false);

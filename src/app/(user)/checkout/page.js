@@ -50,6 +50,8 @@ useEffect(() => {
   setTotalPrice(total);
   setValue(merged);
 }, [data]);  
+
+
 const validationSchema = Yup.object({
     firstName: Yup.string().min(3, "Name must be at least 3 characters").required("Name is required"),
     streetAddress: Yup.string().required("streetAddress is required"),
@@ -116,7 +118,6 @@ const formik = useFormik({
                       <input type="text" id="streetAddress" name="streetAddress" value={formik.values.streetAddress} onChange={formik.handleChange} onBlur={formik.handleBlur}
                         className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"/>
                       {formik.touched.streetAddress && formik.errors.streetAddress && (<span className="text-red-700" > {formik.errors.streetAddress} </span>)}
-
                     </div>
 
                     <div>

@@ -71,8 +71,7 @@ useEffect(()=>{
 
 return (<>
 <div className="relative">
-  <div className="text-right max-w-7xl mx-auto">
-    <button className=" relative cursor-pointer" onClick={() => setOpenCart(!openCart)}>
+    <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
       <ShoppingBag />
       {value.length && (
           <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
@@ -80,7 +79,6 @@ return (<>
           </span>
       )}
     </button>
-  </div>
   
   {/* Overlay */}
   {openCart && (

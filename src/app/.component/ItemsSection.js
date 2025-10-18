@@ -4,6 +4,7 @@ import { useState,useEffect } from 'react';
 import { ChevronDown, } from 'lucide-react';
 import axios from 'axios';
 import Link from 'next/link'
+import api from '../lib/api';
 
 const ItemsSection = () => {
       
@@ -17,15 +18,7 @@ const ItemsSection = () => {
     
     const getApiCategories = async ()=>{
       try{
-        const response = await axios.get(
-        "https://solarhouse.pk/wp-json/wc/v3/products/categories?per_page=100",
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
+        const response = await api.get("/products/categories?per_page=100");
       setApiCategories(response.data)
       }catch (e){
         console.log(e.message);
@@ -33,15 +26,7 @@ const ItemsSection = () => {
     }
     const getApiTags = async ()=>{
       try{
-          const response = await axios.get(
-        "https://solarhouse.pk/wp-json/wc/v3/products/tags?per_page=100",
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
+          const response = await api.get("/products/tags?per_page=100");
       setApiTags(response.data);
       }catch(e){
         console.log(e.message);
@@ -62,7 +47,7 @@ const ItemsSection = () => {
         </div>
         <ul className={`grid gap-2  [&>li:hover]:text-black overflow-hidden transition-all duration-500 ease-out ${category ? "max-h-96 opacity-100 [&>*]:px-3 my-2" : "h-0 opacity-0"}`}>
           {apiCategories.map((value)=>(
-            <li key={value.id} className='flex items-center  justify-between text-gray-600 cursor-pointer' >
+            <li key={value.id} onClick={()=>{}} className='flex items-center  justify-between text-gray-600 cursor-pointer' >
             <Link href={`/shop/${value.id}`} className='flex items-center' >
               <ChevronDown size={15} className='text-[5px] -rotate-90'/>
               <p>{value.name}</p>

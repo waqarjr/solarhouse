@@ -1,14 +1,16 @@
 'use client'
 import { useState } from "react"
 import { X,User} from "lucide-react"
-import { useRouter } from 'next/navigation';
 import * as Yup from "yup";
 import { useFormik,} from 'formik';
 import axios from "axios";
+
 const Account = () => {
 
 const [openCart ,setOpenCart] = useState(false);
 const [register , setRegister] = useState(true);
+const token = true;
+
 
 const validationSchema = Yup.object({
     username: Yup.string().email().required(),
@@ -23,27 +25,20 @@ const formik = useFormik({
   validationSchema : validationSchema,
   onSubmit: async (values)=>{
         try{ 
-        const response = await axios.get(`https://solarhouse.pk/wp-json/wc/v3/customers?email=${values.username}`,
+        const response = await axios.post(`https://solarhouse.pk/wp-json/jwt-auth/v1/token`,
         {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
+          username: values.username,
+          password: values.password,
         }
       );
-      if (response.data && response.data.length > 0) {
-      console.log(response.data[0]);
-      return response.data[0];
-    } else {
-      console.warn(" No customer found with this username/email");
-      return null;
-    }
+      localStorage.setItem("_user_token_auth",response.data.token);
+      
       }catch (e){
         console.log(e.message);
       } 
   }
 })
-
+ 
 
 const handRegis = useFormik({
   initialValues : { regis :"",},
@@ -54,12 +49,26 @@ const handRegis = useFormik({
 })
 
 return (<>
-<div className="relative">
+<div className="relative group">
     <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
       <User />
     </button>
-  
-  {openCart && (
+    { token ? (<>
+        <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
+                   translate-y-2 opacity-0 invisible
+                   group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible
+                   transition-all duration-300 ease-in-out
+                   shadow-lg group-hover:shadow-2xl
+                   [&>*]:rounded-md [&>*]:hover:bg-gray-200 [&>*]:p-2 [&>*]:cursor-pointer [&>*]:transition-colors">
+      <li>Dashboard</li>
+      <li>Orders</li>
+      <li>Downloads</li>
+      <li>Addresses</li>
+      <li>Account details</li>
+      <li className="text-red-600 hover:!bg-red-100">Log out</li>
+    </ul>
+    </>) : (<>
+      {openCart && (
     <div className="fixed inset-0 bg-gray-50/50  z-40 cursor-default" onClick={() => setOpenCart(false)}/>
   )}
   
@@ -77,17 +86,17 @@ return (<>
       </div>
       <div className="flex items-center justify-center g-amber-200 h-[350px] " >
         <form onSubmit={formik.handleSubmit} className="[&>*]:my-4" >  
-              <input type="text" placeholder="Email or username" name="username" value={formik.values.username} onChange={formik.handleChange} onBlur={formik.handleBlur}
+              <input type="text" placeholder="Email" name="username" autoComplete="username" value={formik.values.username} onChange={formik.handleChange} onBlur={formik.handleBlur}
                 className={`w-full px-4 py-3 border text-black  rounded-md focus:ring-2 focus:ring-blue-500 focus:border-t   ransparent outline-none transition
                 ${formik.errors.username && formik.touched.username ? "border-red-400" : "border-gray-300"}
                 `}/>
-              <input type="password" placeholder="Password" name="password" value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur}
+              <input type="password" autoComplete="current-password" placeholder="Password" name="password" value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur}
                 className={`w-full px-4 py-3 border text-black  rounded-md focus:ring-2 focus:ring-blue-500 focus:border-t   ransparent outline-none transition
                 ${formik.errors.password && formik.touched.password ? "border-red-400" : "border-gray-300"}
                 `}/>
               <div className="flex gap-3" >
-                <input type="checkbox" id="remember" />
-                <label className="font-bold text-black " htmlFor="remember" >Remember me</label>
+                <input type="checkbox"/>
+                <label className="font-bold text-black ">Remember me</label>
               </div>  
               <button type="submit" className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-md transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" >
                 Login
@@ -138,6 +147,9 @@ return (<>
     </div>
     )}
   </div>
+    </>)}
+
+
 </div>
   </>)
 

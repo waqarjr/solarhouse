@@ -2,7 +2,7 @@
 import { ChevronDown,Heart , Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import axios from 'axios';
-
+import api from '../lib/api';
 import { useState,useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useStoreData from "@/app/lib/useStoreData";
@@ -34,23 +34,15 @@ const Products = () => {
         localStorage.setItem("name", JSON.stringify(updatedData));
       }
     };
-        
+    
     const getData = async ()=>{
-    try{
-      const response = await axios.get(
-      `https://solarhouse.pk/wp-json/wc/v3/products?orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`,
-      {
-        auth: {
-          username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-          password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-        }
+      try{
+      const response = await api.get(`/products?orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`)      
+      setTotalProducts(response.headers["x-wp-total"]); 
+      setProducts(response.data)
+      }catch (e){
+        console.log(e.message);
       }
-    );
-    setTotalProducts(response.headers["x-wp-total"]); 
-    setProducts(response.data)
-    }catch (e){
-      console.log(e.message);
-    }
     }
   useEffect(()=>{
     getData();

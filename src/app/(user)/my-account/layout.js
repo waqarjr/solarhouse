@@ -5,8 +5,6 @@ import { LayoutDashboard, Package, Download, MapPin, User, LogOut } from 'lucide
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
 
-
-
 export default function Layout({ children }) {
   
   const pathName = usePathname();
@@ -19,9 +17,9 @@ export default function Layout({ children }) {
     { icon: User, label: "Account details", href:"/my-account/edit-account" },
   ];
 
-  return (
-    <html lang="en">
-      <body>
+
+  return (  
+    <>
         <Header />
         <div className="min-h-screen grid grid-cols-[20%_auto]  max-w-7xl mx-auto">
           <aside className="">
@@ -48,7 +46,6 @@ export default function Layout({ children }) {
             {children}
           </main>
         </div>
-      </body>
-    </html>
+    </>
   )
 }

@@ -45,9 +45,3 @@ export async function POST(req) {
   }
   
 }
-
-//   export async function POST() {
-//   const res = NextResponse.json({ ok: true });
-//   // expire cookie
-//   res.headers.set('Set-Cookie', `token=deleted; HttpOnly; Path=/; Max-Age=0; SameSite=Lax;${process.env.NODE_ENV === 'production' ? ' Secure;' : ''}`);
-//   return res;

@@ -1,16 +1,18 @@
 'use client'
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { X,User} from "lucide-react"
 import * as Yup from "yup";
 import { useFormik,} from 'formik';
 import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Account = () => {
 
 const [openCart ,setOpenCart] = useState(false);
 const [register , setRegister] = useState(true);
-const [token, setToken] = useState(false);
+const [token, setToken] = useState(true);
+const router = useRouter();
 
 
 const validationSchema = Yup.object({
@@ -26,15 +28,15 @@ const formik = useFormik({
   validationSchema : validationSchema,
   onSubmit: async (values)=>{
         try{ 
-          const responce = await axios.post("/api/login",values)
+          const responce = await axios.post("/api/auth/login",values)
           setToken(responce.data.valid);
+          localStorage.setItem("isopen",true)
       }catch (e){
         console.log(e.message);
       } 
   }
 })
  
-
 const handRegis = useFormik({
   initialValues : { regis :"",},
   validationSchema :  Yup.object({ regis : Yup.string().required(),}),
@@ -43,9 +45,26 @@ const handRegis = useFormik({
   }
 })
 
-const logout = ()=>{
-    console.log("Logout");
+const logout = async ()=>{
+  try{
+    setToken(false);
+    const responce =  await axios.post('/api/auth/logout')
+    if(responce.data.valid) {
+      router.push('/');
+    }
+  }catch(error){
+    console.error(error.message);
+  }
 }
+
+useEffect(()=>{
+  const value = localStorage.getItem("isopen");
+  if(value != null && value != undefined && value != false) {
+    setToken(true);
+  } else {
+    setToken(false);
+  }
+},[])
 
 return (<>
   <div className="relative group">
@@ -74,7 +93,7 @@ return (<>
         <li>
           <Link href="/my-account/edit-account/" >Account details</Link>
         </li>
-        <li className="text-red-600 hover:!bg-red-100">Log out</li>
+        <li onClick={()=>{logout()}} className="text-red-600 hover:!bg-red-100">Log out</li>
       </ul>
       </>) : (<>
         {openCart && (
@@ -107,7 +126,7 @@ return (<>
                   <input type="checkbox"/>
                   <label className="font-bold text-black ">Remember me</label>
                 </div>  
-                <button onClick={()=>{}} type="submit" className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-md transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" >
+                <button  type="submit" className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-md transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" >
                   Login
                 </button>
           </form>

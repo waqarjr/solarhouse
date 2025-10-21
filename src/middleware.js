@@ -18,7 +18,7 @@ export async function middleware(req) {
     return NextResponse.next();
   }
 
-  const token = req.cookies.get('token')?.value;
+  const token = req.cookies.get('_auth_token')?.value;
   if (!token) {
     const homePage = new URL('/', origin);
     return NextResponse.redirect(homePage);

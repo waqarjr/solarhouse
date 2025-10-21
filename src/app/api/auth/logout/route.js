@@ -4,7 +4,7 @@ export async function POST() {
   const res = NextResponse.json({ valid: true, message: "Logged out successfully" });
 
   res.cookies.set({
-    name: "token",
+    name: "_auth_token",
     value: "",
     path: "/",
     httpOnly: true,

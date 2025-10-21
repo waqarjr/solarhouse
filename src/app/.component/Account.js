@@ -40,8 +40,12 @@ const formik = useFormik({
 const handRegis = useFormik({
   initialValues : { regis :"",},
   validationSchema :  Yup.object({ regis : Yup.string().required(),}),
-  onSubmit : (values,)=>{
-    console.log(values);
+  onSubmit : async(values,)=>{
+   const password = Math.floor(Math.random()*1000000).toString();
+    const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
+    console.log(newValue);
+    const response = await axios.post("/api/auth/signup",newValue);
+    console.log(response.data.message , response.data.customer);
   }
 })
 

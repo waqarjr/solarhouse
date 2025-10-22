@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react"
-import { X,User} from "lucide-react"
+import { X,  User} from "lucide-react"
 import * as Yup from "yup";
 import { useFormik,} from 'formik';
 import axios from "axios";
@@ -43,9 +43,8 @@ const handRegis = useFormik({
   onSubmit : async(values,)=>{
    const password = Math.floor(Math.random()*1000000).toString();
     const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
-    console.log(newValue);
     const response = await axios.post("/api/auth/signup",newValue);
-    console.log(response.data.message , response.data.customer);
+    if(response.data.valid) router.push("/my-account");
   }
 })
 
@@ -101,7 +100,7 @@ return (<>
       </ul>
       </>) : (<>
         {openCart && (
-      <div className="fixed inset-0 bg-gray-50/50  z-40 cursor-default" onClick={() => setOpenCart(false)}/>
+        <div className="fixed inset-0 bg-gray-50/50  z-40 cursor-default" onClick={() => setOpenCart(false)}/>
     )}
     
     <div className={`fixed cursor-default top-0 right-0 h-full w-[500px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>

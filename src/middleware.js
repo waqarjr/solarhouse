@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
 const PROTECTED_PATHS = [
-  '/my-account',
   '/my-account/orders',
   '/my-account/downloads',
   '/my-account/edit-account',

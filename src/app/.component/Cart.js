@@ -4,7 +4,8 @@ import { X,ShoppingBag } from "lucide-react"
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from 'next/navigation';
 import axios from "axios";
-
+import api from "../lib/api";
+import Swal from "sweetalert2";
 const Cart = () => {
 const [openCart ,setOpenCart] = useState(false);
 const {cart,toggleCart} = useStoreData();
@@ -16,16 +17,16 @@ const router = useRouter();
 const getData = async (string)=>{
     if (!string) return;
     try{
-        const response = await axios.get(
-        `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
+        const response = await api.get(`/products?include=${string}`);
       setData(response.data);
+      
+      const Toast = Swal.mixin({
+        toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+      });
+      Toast.fire({
+        icon: "success", title: "Product added to cart successfully",
+      });
+
       }catch (e){
         console.log(e.message);
       } 
@@ -66,6 +67,12 @@ useEffect(()=>{
       const string = JSON.stringify(fil);
       localStorage.setItem("name",string);
       toggleCart();
+      const Toast = Swal.mixin({
+        toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+      });
+      Toast.fire({
+        icon: "error", title: "Product removed successfully",
+      });
   }
 
 

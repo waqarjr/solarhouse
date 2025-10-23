@@ -29,7 +29,7 @@ export async function POST(req) {
     });
 
     const token = wpRes.data.token;
-
+    console.log(token,"signup");
     const cookieStore = await cookies();
     cookieStore.set("_auth_token", token, {
       httpOnly: true,

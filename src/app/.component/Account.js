@@ -43,6 +43,7 @@ const handRegis = useFormik({
   onSubmit : async(values,)=>{
    const password = Math.floor(Math.random()*1000000).toString();
     const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
+    console.log(newValue);
     const response = await axios.post("/api/auth/signup",newValue);
     if(response.data.valid) router.push("/my-account");
   }
@@ -74,7 +75,7 @@ return (<>
       <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
         <User />
       </button>
-      { token ? (<>
+      { token? (<>
           <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
                     translate-y-2 opacity-0 invisible
                     group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible

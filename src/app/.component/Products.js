@@ -1,17 +1,15 @@
 'use client'
 import { ChevronDown,Heart , Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
-import axios from 'axios';
 import api from '../lib/api';
 import { useState,useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useStoreData from "@/app/lib/useStoreData";
 
 const Products = () => {
+    const {showProduct,setShowProduct,select,setSelect} = useStoreData();
 
     const [products , setProducts] = useState([])
-    const [showProduct , setShowProdct] = useState("12");
-    const [select , setSelect] = useState('date,desc');
     const [totalProducts, setTotalProducts] = useState()
     const router = useRouter();
     const {toggleCart} = useStoreData();    
@@ -55,9 +53,9 @@ const Products = () => {
             <div className='flex items-center justify-end gap-4 mx-2' >
               {/* products per page */}
                 <p className='[&>*]:p-1 gap-2 flex items-center justify-center' >Show 
-                  <span className={`${showProduct === "12" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={()=>setShowProdct("12")} >12</span>
-                   <span className={`${showProduct === "15" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={ ()=>setShowProdct("15")} >15</span> 
-                   <span className={`${showProduct === "30" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={ ()=> setShowProdct("30")} >30</span>
+                  <span className={`${showProduct === "12" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={()=>setShowProduct("12")} >12</span>
+                   <span className={`${showProduct === "15" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={ ()=>setShowProduct("15")} >15</span> 
+                   <span className={`${showProduct === "30" ? " border-black border-b-2 " :""} cursor-pointer hover:text-blue-500`} onClick={ ()=> setShowProduct("30")} >30</span>
                 </p>
                 {/* slection */}
                 <div className="relative inline-flex items-center">

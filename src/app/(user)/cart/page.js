@@ -4,6 +4,7 @@ import { ChevronRight, Trash2 } from 'lucide-react';
 import axios from 'axios';
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 const  Page = ()=> {
   const {cart,toggleCart} = useStoreData();
@@ -25,6 +26,12 @@ const getData = async (string)=>{
         }
       );
       setData(response.data);
+        const Toast = Swal.mixin({
+          toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+        });
+        Toast.fire({
+          icon: "success", title: "Product quantity updated successfully",
+        });
       }catch (e){
         console.error(e.message);
       } 
@@ -87,6 +94,12 @@ useEffect(()=>{
       const string = JSON.stringify(fil);
       localStorage.setItem("name",string);
       toggleCart();
+      const Toast = Swal.mixin({
+          toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+        });
+        Toast.fire({
+          icon: "error", title: "Product removed successfully",
+        });
   }
 
   return (

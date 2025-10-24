@@ -6,34 +6,65 @@ import { useFormik,} from 'formik';
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 const Account = () => {
 
 const [openCart ,setOpenCart] = useState(false);
 const [register , setRegister] = useState(true);
-const [token, setToken] = useState(true);
+const [valid, setValid] = useState(true);
+const [error ,setError] = useState(false);
 const router = useRouter();
-
+const [signupError , setSignupError] = useState(false);
 
 const validationSchema = Yup.object({
-    username: Yup.string().email().required(),
+    email: Yup.string().email().required(),
     password : Yup.string().required(),
 });
 const initialValues = {
-  username : "",
+  email : "",
   password : "",
 }
 const formik = useFormik({ 
   initialValues : initialValues,
   validationSchema : validationSchema,
   onSubmit: async (values)=>{
-        try{ 
-          const responce = await axios.post("/api/auth/login",values)
-          setToken(responce.data.valid);
-          localStorage.setItem("isopen",true)
-      }catch (e){
-        console.log(e.message);
-      } 
+    try{ 
+      const response = await axios.post("/api/auth/login",values)
+          if(response.data.valid) {
+            Swal.fire({
+            title: `${response.data.message}`,
+            text: "Welcome back 👋",
+            icon: "success",
+            confirmButtonText: "Continue",
+            confirmButtonColor: "#3085d6",
+            timer: 2500,
+            timerProgressBar: true,
+          });
+           setError(false);
+          router.push("/my-account");
+        }
+      }catch (error){
+          if (error.response && error.response.status === 403) {
+                setError(true);
+              } 
+              else if (error.response && error.response.status === 500) {
+                Swal.fire({
+                  title: "Server Error",
+                  text: "Something went wrong on our end. Please try again later.",
+                  icon: "error",
+                  confirmButtonText: "OK",
+                });
+              } 
+              else {
+                Swal.fire({
+                  title: "Unexpected Error",
+                  text: "Unable to connect to the server. Please check your connection.",
+                  icon: "warning",
+                  confirmButtonText: "OK",
+                });
+              }
+      }
   }
 })
  
@@ -41,11 +72,32 @@ const handRegis = useFormik({
   initialValues : { regis :"",},
   validationSchema :  Yup.object({ regis : Yup.string().required(),}),
   onSubmit : async(values,)=>{
-   const password = Math.floor(Math.random()*1000000).toString();
-    const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
-    console.log(newValue);
-    const response = await axios.post("/api/auth/signup",newValue);
-    if(response.data.valid) router.push("/my-account");
+    try {
+      const password = Math.floor(Math.random()*1000000).toString();
+       const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
+       const response = await axios.post("/api/auth/signup",newValue);
+        Swal.fire({
+          title: `${response.data.message}`,
+          text: "Welcome back 👋",
+          icon: "success",
+          confirmButtonText: "Continue",
+          confirmButtonColor: "#3085d6",
+          timer: 2500,
+          timerProgressBar: true,
+        });
+      router.push("/my-account");
+    } catch (error) {
+      if(error.response && error.response.status === 409) {
+        setSignupError(true);
+    } else {
+      Swal.fire({
+        text: "Fail to submit your email",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+    }
+    
   }
 })
 
@@ -64,9 +116,9 @@ const logout = async ()=>{
 useEffect(()=>{
   const value = localStorage.getItem("isopen");
   if(value != null && value != undefined && value != false) {
-    setToken(true);
+    setValid(true);
   } else {
-    setToken(false);
+    setValid(false);
   }
 },[])
 
@@ -75,7 +127,7 @@ return (<>
       <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
         <User />
       </button>
-      { token? (<>
+      { valid? (<>
           <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
                     translate-y-2 opacity-0 invisible
                     group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible
@@ -118,14 +170,15 @@ return (<>
         </div>
         <div className="flex items-center justify-center g-amber-200 h-[350px] " >
           <form onSubmit={formik.handleSubmit} className="[&>*]:my-4" >  
-                <input type="text" placeholder="Email" name="username" autoComplete="username" value={formik.values.username} onChange={formik.handleChange} onBlur={formik.handleBlur}
+                <input type="text" placeholder="Email" name="email" autoComplete="email" value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur}
                   className={`w-full px-4 py-3 border text-black  rounded-md focus:ring-2 focus:ring-blue-500 focus:border-t   ransparent outline-none transition
-                  ${formik.errors.username && formik.touched.username ? "border-red-400" : "border-gray-300"}
+                  ${formik.errors.email && formik.touched.email ? "border-red-400" : "border-gray-300"}
                   `}/>
                 <input type="password" autoComplete="current-password" placeholder="Password" name="password" value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur}
                   className={`w-full px-4 py-3 border text-black  rounded-md focus:ring-2 focus:ring-blue-500 focus:border-t   ransparent outline-none transition
                   ${formik.errors.password && formik.touched.password ? "border-red-400" : "border-gray-300"}
                   `}/>
+                  {error && (<p className="text-red-500 text-center" >Username or password is incorrect </p>)}
                 <div className="flex gap-3" >
                   <input type="checkbox"/>
                   <label className="font-bold text-black ">Remember me</label>
@@ -158,6 +211,7 @@ return (<>
                   className={`w-full px-4 py-3 border text-black  rounded-md focus:ring-2 focus:ring-blue-500 focus:border-t   ransparent outline-none transition
                   ${handRegis.errors.regis && handRegis.touched.regis ? "border-red-400" : "border-gray-300"}
                   `}/>
+                  {signupError && (<p className="text-red-500 text-center" >Email already used please try another </p>)}
                 <p className="text-gray-600" >
                   A password will be sent to your email address.
                 </p>

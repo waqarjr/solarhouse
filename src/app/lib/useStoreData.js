@@ -23,6 +23,9 @@ const useStoreData = create((set) => ({
 
   setFilter :(value ) => set( {filter : value} ),
   
+  payment  : "cod",
+  setPayment  : (value) => set({payment : value}),
+
 }));
 
 export default useStoreData;

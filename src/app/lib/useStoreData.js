@@ -23,7 +23,7 @@ const useStoreData = create((set) => ({
 
   setFilter :(value ) => set( {filter : value} ),
   
-  payment  : "cod",
+  payment  : "cod,Cash on delivery",
   setPayment  : (value) => set({payment : value}),
 
 }));

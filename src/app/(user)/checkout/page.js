@@ -12,6 +12,8 @@ export default function CheckoutForm() {
   const [data ,setData ] = useState([])
   const [totalPrice ,setTotalPrice] = useState(0);
   const [shipping , setShipping] = useState(false);
+  const [orderNote , setOrderNote] = useState("");
+
   const {payment} = useStoreData();
 
   const getData = async (string)=>{
@@ -31,7 +33,6 @@ export default function CheckoutForm() {
         console.log(e.message);
       } 
 }
-  
 useEffect(()=>{
   const storageData = localStorage.getItem("name");
   const jsonObject= JSON.parse(storageData);
@@ -55,7 +56,6 @@ useEffect(() => {
   setValue(merged);
 }, [data]);  
 
-
  const validationSchema = Yup.object({
     firstName: Yup.string().required("firstName is required"),
     lastName: Yup.string().required("lastName is required"),
@@ -75,7 +75,6 @@ useEffect(() => {
     state: Yup.string().required("state is required"),
     postcode: Yup.string().required("postcode is required"),
   });
-
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -90,7 +89,10 @@ useEffect(() => {
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       try {
+        const newValue = { ...values , products : value , payment: payment,orderNote : orderNote}
+
         if (shipping) {
+
         const shippingErrors = await formikShipping.validateForm();
 
         if (Object.keys(shippingErrors).length > 0) {
@@ -103,13 +105,15 @@ useEffect(() => {
           return; 
         }
 
-          const response =  await axios.post('/api/checkout', { billing: values, shipping: formikShipping.values,payment: payment });
-          console.log(response.data)
+        // response with shipping
+          const response =  await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values,});
+          console.log(response)
 
         } else {
-
-          const response =  await axios.post('/api/checkout', { billing: values ,payment : payment})
-          console.log(response.data);
+          
+          // response only billing
+          const response =  await axios.post('/api/checkout', { billing: newValue ,payment : payment})
+          console.log(response);
         }
       } catch (error) {
         console.log(error.message, error.response?.status);
@@ -127,14 +131,6 @@ useEffect(() => {
       postcode: "",
     },
     validationSchema: validationShipping,
-    onSubmit: async (values) => {
-      try {
-        console.log("Shipping Submitted:", values);
-        setShipping(values);
-      } catch (error) {
-        console.log(error.message, error.response?.status);
-      }
-    },
   });
   return (
 
@@ -225,6 +221,10 @@ useEffect(() => {
 
                         </div>
                       </div>
+                    </div>
+                    <div >
+                      <label htmlFor="orderNote" className="block text-sm font-medium text-gray-700 mb-2">Order notes (optional)</label>
+                      <textarea placeholder='Please Enter Your Order Note Here' value={orderNote} onChange={(e) => setOrderNote(e.target.value)} className='border-2 border-gray-200 w-full focus:border-blue-500 focus:ring-0 focus:outline-none p-2 rounded-md'  />
                     </div>
                 </div>
 

@@ -11,7 +11,7 @@ const page = () => {
     initialValues : { regis :"",},
     validationSchema :  Yup.object({ regis : Yup.string().email().required(),}),
     onSubmit : async(values,)=>{
-      console.log(values);
+      console.log(values);""
     //  const password = Math.floor(Math.random()*1000000).toString();
     //   const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
     //   const response = await axios.post("/api/auth/signup",newValue);

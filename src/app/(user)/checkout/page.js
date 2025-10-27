@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useFormik,} from 'formik';
 import Payment from "@/app/.component/Payment";
 import useStoreData from '@/app/lib/useStoreData';
+import Swal from 'sweetalert2';
 
 export default function CheckoutForm() {
   
@@ -14,7 +15,14 @@ export default function CheckoutForm() {
   const [shipping , setShipping] = useState(false);
   const [orderNote , setOrderNote] = useState("");
 
+  let status = null
   const {payment} = useStoreData();
+    
+  if(payment.split(",")[0] === "cod" ) {
+     status = "processing";
+    } else {
+      status = "on-hold";
+    }
 
   const getData = async (string)=>{
     if (!string) return;
@@ -56,6 +64,23 @@ useEffect(() => {
   setValue(merged);
 }, [data]);  
 
+const sweetAlert = (valid,resetForm)=>{
+      if(valid){
+        Swal.fire({
+        icon: "success",
+        title: "successful",
+        text: "Your order has been taken successfully",
+      });
+      resetForm();
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong! would you like to try again ?",
+      });
+    }
+}
+
  const validationSchema = Yup.object({
     firstName: Yup.string().required("firstName is required"),
     lastName: Yup.string().required("lastName is required"),
@@ -87,34 +112,34 @@ useEffect(() => {
       email: "",
     },
     validationSchema: validationSchema,
-    onSubmit: async (values) => {
+    onSubmit: async (values,{resetForm}) => {
       try {
         const newValue = { ...values , products : value , payment: payment,orderNote : orderNote}
+        console.log(newValue);
+        // if (shipping) {
 
-        if (shipping) {
+        // const shippingErrors = await formikShipping.validateForm();
 
-        const shippingErrors = await formikShipping.validateForm();
+        // if (Object.keys(shippingErrors).length > 0) {
+        //   formikShipping.setTouched(
+        //     Object.keys(formikShipping.initialValues).reduce(
+        //       (acc, key) => ({ ...acc, [key]: true }),
+        //       {}
+        //     )
+        //   );
+        //   return; 
+        // }
+        // // response with shipping
+        //   const response =  await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values, status  : status});
+        //   console.log(status,response.data);
+        //   sweetAlert(response.data.valid,resetForm()); 
+        // } else {
+        //   // response only billing
+        //   const response =  await axios.post('/api/checkout', { billing: newValue ,payment : payment, status  : status })
+        //   console.log(status,response.data);
 
-        if (Object.keys(shippingErrors).length > 0) {
-          formikShipping.setTouched(
-            Object.keys(formikShipping.initialValues).reduce(
-              (acc, key) => ({ ...acc, [key]: true }),
-              {}
-            )
-          );
-          return; 
-        }
-
-        // response with shipping
-          const response =  await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values,});
-          console.log(response)
-
-        } else {
-          
-          // response only billing
-          const response =  await axios.post('/api/checkout', { billing: newValue ,payment : payment})
-          console.log(response);
-        }
+        //   sweetAlert(response.data.valid,resetForm());
+        // }
       } catch (error) {
         console.log(error.message, error.response?.status);
       }

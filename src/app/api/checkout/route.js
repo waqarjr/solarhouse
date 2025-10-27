@@ -3,15 +3,14 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const { billing, shipping } = await req.json();
-
+    const { billing, shipping ,status} = await req.json();
     if (!billing || !billing.email) {
       return NextResponse.json({ valid: false, message: "Billing information or email is missing." , order:false },
         { status: 400 });
     }
 
     const [payment_method, payment_method_title] = billing?.payment?.split(",") || [];
-
+    const method = payment_method;
     let customerId = null; 
 
     const existingUser = await api.get(`/customers?email=${billing.email}`);
@@ -46,7 +45,8 @@ export async function POST(req) {
       const orderData = {
         payment_method,
         payment_method_title,
-        set_paid: true,
+        status: method === "cod" ? "processing" : "on-hold",
+        set_paid: method === "cod" ?  true : false,
         currency: "PKR",
         billing: {
           first_name: billing?.firstName,
@@ -70,7 +70,10 @@ export async function POST(req) {
           postcode: shipping?.postcode || billing?.postcode,
           country: shipping?.country || "PK",
         },
-        line_items: billing?.products || [],
+        line_items: billing?.products?.map((p) => ({
+                    product_id: p.id,         
+                    quantity: p.quantity || 1,
+                  })),
         customer_id: customerId,
         customer_note: billing?.orderNote || "",
         shipping_lines: [
@@ -87,7 +90,7 @@ export async function POST(req) {
     // Create order
     const orderResponse = await createOrder(customerId);
 
-    return NextResponse.json(
+    return NextResponse.json( 
       {  valid: true, message: "Order created successfully!", order: orderResponse.data,},
       { status: 201 }
     );

@@ -26,6 +26,11 @@ const useStoreData = create((set) => ({
   payment  : "cod,Cash on delivery",
   setPayment  : (value) => set({payment : value}),
 
+  user : null,
+  valid: false,
+  setUser: (userData) => set({ user: userData, valid: true }),
+  clearUser: () => set({ valid: false }),
+  
 }));
 
 export default useStoreData;

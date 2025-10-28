@@ -1,22 +1,40 @@
 'use client'
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Package, Truck, CreditCard, FileText, Clock, Building2 } from 'lucide-react';
 import { useRouter,useParams } from 'next/navigation';
 import axios from 'axios';
+import api from '@/app/lib/api';
 
 export default function OrderDetails() {
     const router  = useRouter();
     const {orderid}  = useParams();
+    const [data , setData] = useState([])
     
-    const getData  = ()=>{
-        console.log(orderid);
+    const getData  = async ()=>{
+        const response = await api.get(`/orders/${orderid}`);
+        setData(response.data)
     }
 
     useEffect(()=>{
         getData()
     },[])
+    
+    console.log(data.line_items,"waqa");
+  const getStatusStyle = (status) => {
+    if (status === "on-hold") {
+      return "bg-orange-100 text-orange-700 border-orange-200";
+    }
+    return "bg-blue-100 text-blue-700 border-blue-200";
+  };
 
-    const order = {
+  const getStatusIcon = (status) => {
+    if (status === "on-hold") {
+      return <Clock className="w-4 h-4" />;
+    }
+    return <Package className="w-4 h-4" />;
+  };
+
+  const order = {
     id: '#9104',
     date: 'October 27, 2025',
     status: 'On hold',
@@ -46,12 +64,12 @@ export default function OrderDetails() {
             <div className=''>
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Order Details</h1>
               <p className="text-slate-600">
-                Order <span className="font-semibold text-slate-900">{order.id}</span> was placed on{' '}
-                <span className="font-semibold text-slate-900">{order.date}</span> and is currently{' '}
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                  <Clock className="w-3 h-3" />
-                  {order.status}
-                </span>
+                Order <span className="font-semibold text-slate-900">{data.id}</span> was placed on
+                <span className="font-semibold text-slate-900">{data.date_created}</span> and is currently &nbsp;
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${getStatusStyle(data.status)}`}>
+                    {getStatusIcon(data.status)}
+                    {data.status}
+                  </span>
               </p>
             </div>
             
@@ -74,23 +92,24 @@ export default function OrderDetails() {
                   Order Items
                 </h2>
               </div>
+
               <div className="p-6">
-                {order.items.map((item) => (
+                {data?.line_items?.map((item) => (
                   <div key={item.id} className="flex gap-4">
                     <div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden">
                       <img 
-                        src={item.image} 
-                        alt={item.name}
+                        src={item?.image?.src} 
+                        alt={item?.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">
-                        {item.name}
+                        {item?.name}
                       </h3>
                       <div className="flex items-center gap-4 text-sm text-slate-600 mb-3">
                         <span className="flex items-center gap-1">
-                          <span className="font-medium">Quantity:</span> {item.quantity}
+                          <span className="font-medium">Quantity:</span> {item?.quantity}
                         </span>
                       </div>
                       <div className="text-lg sm:text-xl font-bold text-slate-900">
@@ -100,8 +119,9 @@ export default function OrderDetails() {
                   </div>
                 ))}
               </div>
-            </div>
 
+            </div>
+ 
             {/* billing & shipping address */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start">
               <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
@@ -110,11 +130,13 @@ export default function OrderDetails() {
                    Billing address
                 </h3>
                 <ul className='[&>*]:text-slate-700' >
-                    <li>Waqar Ahmad</li>
-                    <li>18GDokara</li>
-                    <li>Okara G.P.O</li>
-                    <li>FATA</li>
-                    <li>56300</li>
+                    <li>{data.billing?.first_name} {data.billing?.last_name}</li>
+                    <li>{data.billing?.address_1}</li>
+                    <li>{data.billing?.city}</li>
+                    <li>{data.billing?.state}</li>
+                    <li>{data.billing?.postcode}</li>
+                    <li>{data.billing?.email}</li>
+                    <li>{data.billing?.phone}</li>
                 </ul>
               </div>
 
@@ -124,11 +146,11 @@ export default function OrderDetails() {
                   Shipping address
                 </h3>
                 <ul className='[&>*]:text-slate-700' >
-                    <li>Waqar Ahmad</li>
-                    <li>18GDokara</li>
-                    <li>Okara G.P.O</li>
-                    <li>FATA</li>
-                    <li>56300</li>
+                    <li>{data.shipping?.first_name} {data.billing?.last_name}</li>
+                    <li>{data.shipping?.address_1}</li>
+                    <li>{data.shipping?.city}</li>
+                    <li>{data.shipping?.state}</li>
+                    <li>{data.shipping?.postcode}</li>
                 </ul>
               </div>
             </div>
@@ -140,16 +162,17 @@ export default function OrderDetails() {
                   <CreditCard className="w-5 h-5" />
                   Payment Method
                 </h3>
-                <p className="text-slate-700">{order.paymentMethod}</p>
+                <p className="text-slate-700">{data?.payment_method_title}</p>
               </div>
-
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+              {
+                data?.customer_note && (<div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
                   Note
                 </h3>
-                <p className="text-slate-700">{order.note}</p>
-              </div>
+                <p className="text-slate-700">{data?.customer_note}</p>
+              </div>)
+              }
             </div>
             
           </div>
@@ -180,11 +203,6 @@ export default function OrderDetails() {
                   </div>
                 </div>
               </div>
-
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors duration-200 flex items-center justify-center gap-2">
-                <Truck className="w-5 h-5" />
-                Track Order
-              </button>
             </div>
           </div>
         </div>

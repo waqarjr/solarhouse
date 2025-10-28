@@ -6,8 +6,7 @@ export async function POST(req) {
     const token = req.cookies.get("_auth_token")?.value;
 
     if (!token) {
-      const homePage = new URL("/", req.url);
-      return NextResponse.redirect(homePage);
+      return NextResponse.json({ valid: false, message: "Error validating token",});
     }
 
     const verifyRes = await axios.post(
@@ -30,21 +29,16 @@ export async function POST(req) {
         }
       ); 
 
-      return NextResponse.json({
-        valid: true,
-        message: userRes.data,
-      });
+      return NextResponse.json({ valid: true,  message: userRes.data,});
     }
 
-    return NextResponse.json({
-      valid: false,
-      message: "Invalid token",
-    });
+    return NextResponse.json({ valid: false, message: "Invalid token",});
+
   } catch (error) {
+
     console.error("Token validation error:", error.message);
-    return NextResponse.json({
-      valid: false,
-      message: "Error validating token",
-    });
+    
+    return NextResponse.json({ valid: false, message: "Invalid token",});
+
   }
 }

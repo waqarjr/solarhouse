@@ -1,15 +1,39 @@
+'use client'
 import Link from 'next/link'
 import React from 'react'
+import useStoreData from '@/app/lib/useStoreData'
+import Swal from 'sweetalert2'
+import axios from 'axios'
 
 const page = () => {
+  const {user,clearUser} = useStoreData();
+ const logout = async ()=>{
+    Swal.fire({
+      title: "Do you want to logout your account?",
+      showCancelButton: true,
+      confirmButtonText: "Yes",
+    }).then( async (result) => {
+      if (result.isConfirmed) {
+        try{
+          const responce =  await axios.post('/api/auth/logout')
+          if(responce.data.valid) clearUser();
+          Swal.fire("Logout successfully !", "", "success");
+        }catch(error){
+          Swal.fire("fail to logout !", "", "error");
+        }
+      } 
+});
+  
+}
+
   return (
     <>
       <main className="flex-1 ">
           <div className="mb-8">
             <p className="text-gray-600 text-sm mb-6">
-              Hello <span className="font-medium">waqarjr03 </span> 
-              ( not waqarjr03? &nbsp;
-              <button className="text-blue-600 hover:underline font-medium">
+              Hello <span className="font-medium">{user.name || "solar house"} </span> 
+              ( not {user.name || "solar house"}? &nbsp;
+              <button onClick={logout} className="text-blue-600 hover:underline font-medium">
                 Log out
               </button>
               )

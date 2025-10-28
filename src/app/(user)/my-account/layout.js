@@ -7,15 +7,20 @@ import { usePathname } from 'next/navigation'
 import axios from 'axios';
 import * as Yup from "yup";
 import { useFormik,} from 'formik';
+import useStoreData from '@/app/lib/useStoreData';
+import Swal from 'sweetalert2';
+
 
 export default function Layout({ children }) {
+  const {valid, setUser, clearUser,user } = useStoreData();
   
-  const pathName = usePathname();
-  const [valid , setValid] = useState(false);
   const [invalidLogin , setInvalidLogin] = useState(false);
-  const [data ,setData ] = useState();
+  const [loading , setLoading] = useState(true);
+
+  const pathName = usePathname();
+
   
-  const menuItems = [
+const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href:"/my-account" },
     { icon: Package, label: "Orders",href:"/my-account/orders" },
     { icon: Download, label: "Downloads", href:"/my-account/downloads" },
@@ -23,16 +28,6 @@ export default function Layout({ children }) {
     { icon: User, label: "Account details", href:"/my-account/edit-account" },
   ];
 
-  const fetchData = async()=>{
-   const response  = await axios.post('/api/auth/verify');
-   setData(response.data);
-    setValid(response.data.valid);
-  }
-  useEffect(()=>{
-    fetchData();     
-  },[])
-
-console.log(data);
 
 const validationSchema = Yup.object({
     email: Yup.string().email().required(),
@@ -42,21 +37,24 @@ const initialValues = {
   email : "",
   password : "",
 }
+
 const formik = useFormik({ 
   initialValues : initialValues,
   validationSchema : validationSchema,
   onSubmit: async (values)=>{
         try{ 
+          setLoading(true);
           const responce = await axios.post("/api/auth/login",values)
-          console.log(responce.data)
-          localStorage.setItem("isopen",true) 
+          if(responce.data.valid) setUser(responce.data.message);
+          else clearUser();
       }catch (e){
         console.log(e.message);
         setInvalidLogin(true);
-      } 
+      } finally {
+        setLoading(false)
+      }
   }
 })
- 
 const handRegis = useFormik({
   initialValues : { regis :"",},
   validationSchema :  Yup.object({ regis : Yup.string().required(),}),
@@ -67,6 +65,96 @@ const handRegis = useFormik({
     if(response.data.valid) router.push("/my-account");
   }
 })
+
+
+
+  const fetchData = async()=>{
+    try{
+      setLoading(true);
+    const response  = await axios.post('/api/auth/verify');
+    if(response.data.valid) setUser(response.data.message);
+      else clearUser();
+    } catch {
+      clearUser();
+    }finally{
+      setLoading(false);
+    }
+
+  }
+
+  useEffect(()=>{
+    fetchData();     
+  },[])
+
+if(loading) return (<>
+  <div className="flex items-center justify-center min-h-[600px] bg-gray-50">
+      <div className="animate-pulse flex flex-col items-center">
+        <div className="h-10 w-10 bg-gray-300 rounded-full mb-4"></div>
+        <div className="h-4 w-40 bg-gray-300 rounded mb-2"></div>
+        <div className="h-4 w-32 bg-gray-300 rounded"></div>
+      </div>
+    </div>
+</>)
+
+// logout 
+const logout = async ()=>{
+Swal.fire({
+  title: "Do you want to logout your account?",
+  showCancelButton: true,
+  confirmButtonText: "Yes",
+}).then( async (result) => {
+  if (result.isConfirmed) {
+    try{
+      setLoading(true);
+      const responce =  await axios.post('/api/auth/logout')
+      if(responce.data.valid) clearUser();
+      Swal.fire("Logout successfully !", "", "success");
+    }catch(error){
+      Swal.fire("fail to logout !", "", "error");
+    } finally {
+      setLoading(false);
+    }
+  } 
+});
+  
+}
+
+// Dashboard
+if(valid) 
+{
+  return (<>
+  <Header/>
+  <div className="grid grid-cols-[20%_auto]  max-w-7xl mx-auto">
+    <aside className="">
+      <nav className="p-4">
+        {menuItems.map( item => {
+          const Icon = item.icon;
+          return (
+            <Link href={item.href} key={item.label} 
+            className={`flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer  hover:text-blue-500 transition-colors text-blue-500
+            ${pathName == item.href ? "text-blue-500" : "text-gray-700"}
+            `}>
+              <Icon className="w-6 h-6" />
+              <p className="text-base font-medium">{item.label}</p>
+            </Link>
+          );
+        })}
+        <button onClick={logout} className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors">
+              <LogOut className="w-6 h-6" />
+              <p className="text-base font-medium">Log Out</p>
+        </button>
+      </nav>
+    </aside>
+    <main className="p-8">
+      {children}
+    </main>
+  </div>
+  </>)
+}
+
+
+
+
 
 // for handle false in after get true 
 const handleChange = (e)=>{
@@ -79,48 +167,8 @@ const handlePassword  = (e)=>{
   formik.handleChange(e);
 }
 
-// logout 
-const logout = async ()=>{
-  try{
-    const responce =  await axios.post('/api/auth/logout')
-    console.log(responce.data)
-  }catch(error){
-    console.error(error.message);
-  }
-}
 
-// Dashboard
-if(valid)
-return (<>
-<Header/>
-<div className="min-h-screen grid grid-cols-[20%_auto]  max-w-7xl mx-auto">
-          <aside className="">
-            <nav className="p-4">
-              {menuItems.map( item => {
-                const Icon = item.icon;
-                return (
-                  <Link href={item.href} key={item.label} 
-                  className={`flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer  hover:text-blue-500 transition-colors text-blue-500
-                  ${pathName == item.href ? "text-blue-500" : "text-gray-700"}
-                  `}>
-                    <Icon className="w-6 h-6" />
-                    <p className="text-base font-medium">{item.label}</p>
-                  </Link>
-                );
-              })}
-              <button onClick={logout} className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors">
-                    <LogOut className="w-6 h-6" />
-                    <p className="text-base font-medium">Log Out</p>
-              </button>
-            </nav>
-          </aside>
-          <main className="p-8">
-            {children}
-          </main>
-</div>
-</>)
-
-// login , signup 
+// login , signup
 return (<>
 <Header/>
 <div className=" flex items-center justify-center bg-white px-4">

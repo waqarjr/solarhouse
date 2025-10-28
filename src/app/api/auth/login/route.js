@@ -6,12 +6,14 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
     const username = email.split("@")[0];
+
        const wpRes = await axios.post("https://solarhouse.pk/wp-json/jwt-auth/v1/token", {
         username: username,
         password: password,
     });
-    const token = wpRes.data.token;
 
+    const token = wpRes.data.token;
+    
     if (!token) 
       return NextResponse.json( { message: "Invalid credentials", valid : false}, { status: 401 });
     
@@ -24,7 +26,7 @@ export async function POST(req) {
       path: "/",
     });
 
-    return NextResponse.json({ message: "Login successful", valid : true,}, { status: 200 });
+    return NextResponse.json({ message: wpRes.data, valid : true,}, { status: 200 });
 
   } catch (error) {
       if (error.response && error.response.status === 403) {

@@ -13,6 +13,7 @@ export default function Layout({ children }) {
   const pathName = usePathname();
   const [valid , setValid] = useState(false);
   const [invalidLogin , setInvalidLogin] = useState(false);
+  const [data ,setData ] = useState();
   
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href:"/my-account" },
@@ -24,13 +25,16 @@ export default function Layout({ children }) {
 
   const fetchData = async()=>{
    const response  = await axios.post('/api/auth/verify');
+   setData(response.data);
     setValid(response.data.valid);
   }
   useEffect(()=>{
     fetchData();     
   },[])
 
-  const validationSchema = Yup.object({
+console.log(data);
+
+const validationSchema = Yup.object({
     email: Yup.string().email().required(),
     password : Yup.string().required(),
 });
@@ -45,7 +49,7 @@ const formik = useFormik({
         try{ 
           const responce = await axios.post("/api/auth/login",values)
           console.log(responce.data)
-          localStorage.setItem("isopen",true)
+          localStorage.setItem("isopen",true) 
       }catch (e){
         console.log(e.message);
         setInvalidLogin(true);
@@ -64,7 +68,7 @@ const handRegis = useFormik({
   }
 })
 
-// for handle false in after get true i
+// for handle false in after get true 
 const handleChange = (e)=>{
     if (invalidLogin) setInvalidLogin(false); 
   formik.handleChange(e);
@@ -76,7 +80,6 @@ const handlePassword  = (e)=>{
 }
 
 // logout 
-
 const logout = async ()=>{
   try{
     const responce =  await axios.post('/api/auth/logout')
@@ -86,7 +89,7 @@ const logout = async ()=>{
   }
 }
 
-
+// Dashboard
 if(valid)
 return (<>
 <Header/>
@@ -114,9 +117,10 @@ return (<>
           <main className="p-8">
             {children}
           </main>
-        </div>
+</div>
 </>)
 
+// login , signup 
 return (<>
 <Header/>
 <div className=" flex items-center justify-center bg-white px-4">

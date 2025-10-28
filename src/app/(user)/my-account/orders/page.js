@@ -1,8 +1,12 @@
+'use client'
 import React from 'react'
 import Link from 'next/link'
 import { OctagonAlert } from 'lucide-react'
 import { Clock, Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
 const page = () => {
+  const router  = useRouter();
 
   const orders = [
     {
@@ -18,7 +22,7 @@ const page = () => {
       total: "₨ 355,250 for 1 item"
     },
     {
-      id: "#9102",
+      id: "#9102",   
       date: "October 27, 2025",
       status: "Processing",
       total: "₨ 355,250 for 1 item"
@@ -91,7 +95,7 @@ const page = () => {
                 </td>
                 <td className="py-6 px-4 text-gray-600">{order.total}</td>
                 <td className="py-6 px-4">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">
+                  <button onClick={()=>router.push('/my-account/orders/123')} className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition cursor-pointer">
                     View
                   </button>
                 </td>
@@ -104,10 +108,7 @@ const page = () => {
       {/* Mobile View */}
       <div className="md:hidden space-y-4">
         {orders.map((order) => (
-          <div
-            key={order.id}
-            className="border border-gray-200 rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow"
-          >
+          <div key={order.id} className="border border-gray-200 rounded-lg p-4 space-y-3 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-1">

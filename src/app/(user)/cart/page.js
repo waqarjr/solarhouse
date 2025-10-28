@@ -69,11 +69,8 @@ const  Page = ()=> {
     }, [data]);  
 
   } catch(error) {
-   
     console.error(error.message,"Your cart is empty")
-
   }
-
 
   const changeQuantity = (quantity,id)=>{
       if(localStorage.getItem("name")) {
@@ -112,7 +109,10 @@ const  Page = ()=> {
         });
   }
 
-if( false) {
+
+  
+
+if(data.length !== 0 ){
     return (
     <div className="min-h-screen ">
       {/* Breadcrumb */}
@@ -226,31 +226,36 @@ if( false) {
 }
 
 return(<>
-<div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-8">
-          Cart
-        </h1>
+      <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8 max-w-7xl mx-auto ">
 
-        {/* Empty Cart State */}
-        <div className="bg-cyan-500 rounded-lg shadow-sm p-12 sm:p-16 lg:p-20">
-          <div className="flex flex-col items-center justify-center text-center">
-            <div className="mb-8">
+        <div className=" px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
+            <span className="hover:text-gray-900 cursor-pointer">Home</span>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-gray-900 font-medium">Cart</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Cart</h1>
+
+        </div>
+
+
+
+        <div className="bg-cyan-500 rounded-lg shadow-sm  sm:p-16 lg:p-12 ">
+          <div className="flex flex-col items-center justify-center text-center gap-8">
               <ShoppingBag className="w-24 h-24 sm:w-32 sm:h-32 text-white stroke-[1.5]" />
-            </div>
-
-            <p className="text-white text-lg sm:text-xl font-light mb-12">
-              Your cart is currently empty.
-            </p>
-
+              <p className="text-white text-lg sm:text-xl font-light mb-12">
+                Your cart is currently empty.
+              </p>
           </div>
         </div>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-3 rounded-md transition-colors duration-200">
-              Return To Shop
-            </button>
+
+        <div className='flex items-center justify-center my-4' >
+          <button onClick={()=>router.push('/shop')} className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-3 rounded-md transition-colors duration-200 ">
+            Return To Shop
+          </button>
+        </div>
       </div>
-    </div>
 
 </>)
 

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req) {
   try {
-    const { billing, shipping ,status} = await req.json();
+    const { billing, shipping } = await req.json();
     if (!billing || !billing.email) {
       return NextResponse.json({ valid: false, message: "Billing information or email is missing." , order:false },
         { status: 400 });
@@ -45,8 +45,8 @@ export async function POST(req) {
       const orderData = {
         payment_method,
         payment_method_title,
-        status: method === "cod" ? "processing" : "on-hold",
         set_paid: method === "cod" ?  true : false,
+        status: method === "cod" ? "processing" : "on-hold",
         currency: "PKR",
         billing: {
           first_name: billing?.firstName,

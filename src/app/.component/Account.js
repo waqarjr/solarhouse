@@ -25,6 +25,7 @@ const initialValues = {
   email : "",
   password : "",
 }
+// login 
 const formik = useFormik({ 
   initialValues : initialValues,
   validationSchema : validationSchema,
@@ -67,7 +68,8 @@ const formik = useFormik({
       }
   }
 })
- 
+
+//  register
 const handRegis = useFormik({
   initialValues : { regis :"",},
   validationSchema :  Yup.object({ regis : Yup.string().required(),}),
@@ -103,13 +105,12 @@ const handRegis = useFormik({
 
 const logout = async ()=>{
   try{
-    setToken(false);
     const responce =  await axios.post('/api/auth/logout')
     if(responce.data.valid) {
       router.push('/');
     }
   }catch(error){
-    console.error("Waqar@1234??");
+    console.error(error.message);
   }
 }
 
@@ -127,7 +128,7 @@ return (<>
       <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
         <User />
       </button>
-      { true? (<>
+      { false? (<>
           <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
                     translate-y-2 opacity-0 invisible
                     group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible

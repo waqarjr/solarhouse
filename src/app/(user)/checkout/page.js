@@ -115,31 +115,31 @@ const sweetAlert = (valid,resetForm)=>{
     onSubmit: async (values,{resetForm}) => {
       try {
         const newValue = { ...values , products : value , payment: payment,orderNote : orderNote}
-        console.log(newValue);
-        // if (shipping) {
+        if (shipping) {
+        console.log(newValue,formikShipping.values);
+        const shippingErrors = await formikShipping.validateForm();
 
-        // const shippingErrors = await formikShipping.validateForm();
+        if (Object.keys(shippingErrors).length > 0) {
+          formikShipping.setTouched(
+            Object.keys(formikShipping.initialValues).reduce(
+              (acc, key) => ({ ...acc, [key]: true }),
+              {}
+            )
+          );
+          return; 
+        }
+        // response with shipping
 
-        // if (Object.keys(shippingErrors).length > 0) {
-        //   formikShipping.setTouched(
-        //     Object.keys(formikShipping.initialValues).reduce(
-        //       (acc, key) => ({ ...acc, [key]: true }),
-        //       {}
-        //     )
-        //   );
-        //   return; 
-        // }
-        // // response with shipping
-        //   const response =  await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values, status  : status});
-        //   console.log(status,response.data);
-        //   sweetAlert(response.data.valid,resetForm()); 
-        // } else {
-        //   // response only billing
-        //   const response =  await axios.post('/api/checkout', { billing: newValue ,payment : payment, status  : status })
-        //   console.log(status,response.data);
+          const response =  await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values,});
+          console.log(status,response.data);
+          sweetAlert(response.data.valid,resetForm()); 
+        } else {
+          // response only billing
 
-        //   sweetAlert(response.data.valid,resetForm());
-        // }
+          const response =  await axios.post('/api/checkout', { billing: newValue ,payment : payment,})
+
+          sweetAlert(response.data.valid,resetForm());
+        }
       } catch (error) {
         console.log(error.message, error.response?.status);
       }
@@ -189,9 +189,22 @@ const sweetAlert = (valid,resetForm)=>{
                       </div>
 
                       <div>
-                        <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-2">State / Country <span className="text-red-500">*</span></label>
-                        <input type="text" id="state" name="state" value={formik.values.state} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`w-full px-4 py-3 border-b-2 outline-none transition ${formik.touched.state && formik.errors.state ? "border-red-500" : "border-gray-300 focus:border-blue-500"}`} />
+                        <label htmlFor="state"  className="block text-sm font-medium text-gray-700 mb-2" >
+                          State / Country <span className="text-red-500">*</span>
+                        </label>
+
+                          <select id="state" name="state" value={formik.values.state} onChange={formik.handleChange} onBlur={formik.handleBlur} className={`w-full px-4 py-3 border-b-2 outline-none transition ${formik.touched.state && formik.errors.state ? "border-red-500" : "border-gray-300 focus:border-blue-500"}`}>
+                            <option value="">Select State / Country</option>
+                            <option value="Azad Kashmir">Azad Kashmir</option>
+                            <option value="Balochistan">Balochistan</option>
+                            <option value="FATA">FATA</option>
+                            <option value="Gilgit Baltistan">Gilgit Baltistan</option>
+                            <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
+                            <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+                            <option value="Punjab">Punjab</option>
+                          </select>
                       </div>
+
 
                       <div>
                         <label htmlFor="postcode" className="block text-sm font-medium text-gray-700 mb-2">Postcode / ZIP <span className="text-red-500">*</span></label>
@@ -235,8 +248,20 @@ const sweetAlert = (valid,resetForm)=>{
                           </div>
 
                           <div>
-                            <label htmlFor="shippingState" className="block text-sm font-medium text-gray-700 mb-2">State / Country <span className="text-red-500">*</span></label>
-                            <input type="text" id="shippingState" name="state" value={formikShipping.values.state} onChange={formikShipping.handleChange} onBlur={formikShipping.handleBlur} className={`w-full px-4 py-3 border-b-2 outline-none transition ${formikShipping.touched.state && formikShipping.errors.state ? "border-red-500" : "border-gray-300 focus:border-blue-500"}`} />
+                            <label htmlFor="shippingState"  className="block text-sm font-medium text-gray-700 mb-2" >
+                              State / Country <span className="text-red-500">*</span>
+                            </label>
+
+                            <select id="state" name="state" value={formikShipping.values.state} onChange={formikShipping.handleChange} onBlur={formikShipping.handleBlur} className={`w-full px-4 py-3 border-b-2 outline-none transition ${formikShipping.touched.state && formikShipping.errors.state ? "border-red-500" : "border-gray-300 focus:border-blue-500"}`}>
+                              <option value="">Select State / Country</option>
+                              <option value="Azad Kashmir">Azad Kashmir</option>
+                              <option value="Balochistan">Balochistan</option>
+                              <option value="FATA">FATA</option>
+                              <option value="Gilgit Baltistan">Gilgit Baltistan</option>
+                              <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
+                              <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
+                              <option value="Punjab">Punjab</option>
+                            </select>
                           </div>
 
                           <div>

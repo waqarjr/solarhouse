@@ -5,6 +5,8 @@ import axios from 'axios';
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
+import { ShoppingBag } from 'lucide-react';
+
 
 const  Page = ()=> {
   const {cart,toggleCart} = useStoreData();
@@ -13,57 +15,65 @@ const  Page = ()=> {
   const [totalPrice ,setTotalPrice] = useState(0);
   const router = useRouter();
 
-const getData = async (string)=>{
-  if (!string) return;
   try{
-        const response = await axios.get(
-        `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
-      setData(response.data);
-        const Toast = Swal.mixin({
-          toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
-        });
-        Toast.fire({
-          icon: "success", title: "Product quantity updated successfully",
-        });
-      }catch (e){
+    const getData = async (string)=>{
+      if (!string) return;
+      try{
+            const response = await axios.get(
+            `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
+            {
+              auth: {
+                username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
+                password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
+              }
+            }
+          );
+          setData(response.data);
+            const Toast = Swal.mixin({
+              toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+            });
+            Toast.fire({
+              icon: "success", title: "Product quantity updated successfully",
+            });
+        }catch (e){
         console.error(e.message);
       } 
-}
+    }
+    
+    useEffect(()=>{
+      if( localStorage.getItem("name")){
+        const storageData = localStorage.getItem("name");
+        const jsonObject= JSON.parse(storageData);
+        const idData = jsonObject.map((value)=> {return  value.id});
+        const string = idData.join(','); 
+        getData(string);
+      }
+    },[cart])
+
+    useEffect(() => {
+      const storageData = localStorage.getItem("name");
+      if (!storageData || data.length === 0) return;
   
-useEffect(()=>{
-  if( localStorage.getItem("name")){
-    const storageData = localStorage.getItem("name");
-    const jsonObject= JSON.parse(storageData);
-    const idData = jsonObject.map((value)=> {return  value.id});
-    const string = idData.join(','); 
-    getData(string);
+      const jsonObject = JSON.parse(storageData);
+  
+      const merged = data.map((item) => {
+        const match = jsonObject.find((q) => q.id === item.id);
+        return { ...item, ...match };
+      });
+      const total = merged.reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.qty),
+        0
+      );
+      setTotalPrice(total);
+      setValue(merged);
+    }, [data]);  
+
+  } catch(error) {
+   
+    console.error(error.message,"Your cart is empty")
+
   }
-},[cart])
 
-  useEffect(() => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData || data.length === 0) return;
-
-    const jsonObject = JSON.parse(storageData);
-
-    const merged = data.map((item) => {
-      const match = jsonObject.find((q) => q.id === item.id);
-      return { ...item, ...match };
-    });
-    const total = merged.reduce(
-      (sum, item) => sum + Number(item.price) * Number(item.qty),
-      0
-    );
-    setTotalPrice(total);
-    setValue(merged);
-  }, [data]);  
 
   const changeQuantity = (quantity,id)=>{
       if(localStorage.getItem("name")) {
@@ -102,7 +112,8 @@ useEffect(()=>{
         });
   }
 
-  return (
+if( false) {
+    return (
     <div className="min-h-screen ">
       {/* Breadcrumb */}
       <div className="bg-white ">
@@ -212,5 +223,36 @@ useEffect(()=>{
       </div>
     </div>
   );
+}
+
+return(<>
+<div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-8">
+          Cart
+        </h1>
+
+        {/* Empty Cart State */}
+        <div className="bg-cyan-500 rounded-lg shadow-sm p-12 sm:p-16 lg:p-20">
+          <div className="flex flex-col items-center justify-center text-center">
+            <div className="mb-8">
+              <ShoppingBag className="w-24 h-24 sm:w-32 sm:h-32 text-white stroke-[1.5]" />
+            </div>
+
+            <p className="text-white text-lg sm:text-xl font-light mb-12">
+              Your cart is currently empty.
+            </p>
+
+          </div>
+        </div>
+            <button className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-3 rounded-md transition-colors duration-200">
+              Return To Shop
+            </button>
+      </div>
+    </div>
+
+</>)
+
 }
 export default Page;

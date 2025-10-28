@@ -12,6 +12,7 @@ export default function Layout({ children }) {
   
   const pathName = usePathname();
   const [valid , setValid] = useState(false);
+  const [invalidLogin , setInvalidLogin] = useState(false);
   
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", href:"/my-account" },
@@ -30,11 +31,11 @@ export default function Layout({ children }) {
   },[])
 
   const validationSchema = Yup.object({
-    username: Yup.string().email().required(),
+    email: Yup.string().email().required(),
     password : Yup.string().required(),
 });
 const initialValues = {
-  username : "",
+  email : "",
   password : "",
 }
 const formik = useFormik({ 
@@ -43,10 +44,11 @@ const formik = useFormik({
   onSubmit: async (values)=>{
         try{ 
           const responce = await axios.post("/api/auth/login",values)
-          setToken(responce.data.valid);
+          console.log(responce.data)
           localStorage.setItem("isopen",true)
       }catch (e){
         console.log(e.message);
+        setInvalidLogin(true);
       } 
   }
 })
@@ -61,6 +63,28 @@ const handRegis = useFormik({
     if(response.data.valid) router.push("/my-account");
   }
 })
+
+// for handle false in after get true i
+const handleChange = (e)=>{
+    if (invalidLogin) setInvalidLogin(false); 
+  formik.handleChange(e);
+}
+
+const handlePassword  = (e)=>{
+    if (invalidLogin) setInvalidLogin(false); 
+  formik.handleChange(e);
+}
+
+// logout 
+
+const logout = async ()=>{
+  try{
+    const responce =  await axios.post('/api/auth/logout')
+    console.log(responce.data)
+  }catch(error){
+    console.error(error.message);
+  }
+}
 
 
 if(valid)
@@ -81,7 +105,7 @@ return (<>
                   </Link>
                 );
               })}
-              <button className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors">
+              <button onClick={logout} className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors">
                     <LogOut className="w-6 h-6" />
                     <p className="text-base font-medium">Log Out</p>
               </button>
@@ -107,18 +131,18 @@ return (<>
 
       <div className="flex items-center justify-center">
         <form onSubmit={formik.handleSubmit} className="w-full max-w-sm md:max-w-md [&>*]:my-4">
-          <input type="text" placeholder="Email" name="username" autoComplete="username" value={formik.values.username} onChange={formik.handleChange} onBlur={formik.handleBlur}
+          <input type="text" placeholder="Email" name="email" autoComplete="email" value={formik.values.email} onChange={handleChange} onBlur={formik.handleBlur}
             className={`w-full px-4 py-3 border text-black rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition
-              ${formik.errors.username && formik.touched.username ? "border-red-400" : "border-gray-300"}
+              ${formik.errors.email && formik.touched.email ? "border-red-400" : "border-gray-300"}
             `}
           />
 
-          <input type="password" autoComplete="current-password" placeholder="Password" name="password" value={formik.values.password}onChange={formik.handleChange} onBlur={formik.handleBlur}
+          <input type="password" autoComplete="current-password" placeholder="Password" name="password" value={formik.values.password}onChange={handlePassword} onBlur={formik.handleBlur}
             className={`w-full px-4 py-3 border text-black rounded-md focus:ring-2 focus:ring-blue-500 outline-none transition
               ${formik.errors.password && formik.touched.password ? "border-red-400" : "border-gray-300"}
             `}
           />
-
+          {invalidLogin && <p className='text-center text-red-500' >Invalid Username Or Password</p>}
           <div className="flex gap-3 items-center">
             <input type="checkbox" />
             <label className="font-bold text-black">Remember me</label>

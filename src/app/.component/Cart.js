@@ -1,175 +1,217 @@
 'use client'
-import { useEffect, useState } from "react"
-import { X,ShoppingBag } from "lucide-react"
+import { useEffect, useState } from "react";
+import { X, ShoppingBag } from "lucide-react";
 import useStoreData from "@/app/lib/useStoreData";
-import { useRouter } from 'next/navigation';
-import axios from "axios";
+import { useRouter } from "next/navigation";
 import api from "../lib/api";
 import Swal from "sweetalert2";
-const Cart = () => {
-const [openCart ,setOpenCart] = useState(false);
-const {cart,toggleCart} = useStoreData();
-const [data ,setData ] = useState([]);
-const [value, setValue] = useState([]);
-const [totalPrice ,setTotalPrice] = useState(0);
-const router = useRouter();
 
-const getData = async (string)=>{
+const Cart = () => {
+  const [openCart, setOpenCart] = useState(false);
+  const { cart, toggleCart } = useStoreData();
+  const [data, setData] = useState([]);
+  const [value, setValue] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const router = useRouter();
+
+  const getData = async (string) => {
     if (!string) return;
-    try{
-        const response = await api.get(`/products?include=${string}`);
+    try {
+      const response = await api.get(`/products?include=${string}`);
       setData(response.data);
-      
+
       const Toast = Swal.mixin({
-        toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false,
       });
       Toast.fire({
-        icon: "success", title: "Product added to cart successfully",
+        icon: "success",
+        title: "Product added to cart successfully",
       });
-
-      }catch (e){
-        console.log(e.message);
-      } 
-}
-
-useEffect(()=>{
-  const storageData = localStorage.getItem("name");
-  if (!storageData) return;
-  const jsonObject= JSON.parse(storageData);
-  const idData = jsonObject.map((value)=> {return  value.id});
-  const string = idData.join(',');
-  getData(string);
-},[cart])
+    } catch (e) {
+      console.log(e.message);
+    }
+  };
 
   useEffect(() => {
     const storageData = localStorage.getItem("name");
-    if (!storageData || data.length === 0) return;
+    if (!storageData) {
+      setData([]);
+      return;
+    }
 
     const jsonObject = JSON.parse(storageData);
+    const idData = jsonObject.map((v) => v.id);
 
+    if (idData.length === 0) {
+      setData([]);
+      setOpenCart(false); // ✅ close when cart empty
+      return;
+    }
+
+    const string = idData.join(",");
+    getData(string);
+  }, [cart]);
+
+  useEffect(() => {
+    const storageData = localStorage.getItem("name");
+    if (!storageData || data.length === 0) {
+      setValue([]);
+      setTotalPrice(0);
+      setOpenCart(false); // ✅ close when cart becomes empty
+      return;
+    }
+
+    const jsonObject = JSON.parse(storageData);
     const merged = data.map((item) => {
       const match = jsonObject.find((q) => q.id === item.id);
       return { ...item, ...match };
     });
+
     const total = merged.reduce(
       (sum, item) => sum + Number(item.price) * Number(item.qty),
       0
     );
+
     setTotalPrice(total);
     setValue(merged);
-  }, [data]);  
+  }, [data]);
 
-  const remove = (id)=>{
-      const storageData = localStorage.getItem("name");
-      if (!storageData) return;
-      const jsonObject= JSON.parse(storageData);
-      const fil = jsonObject.filter(val => val.id !== id);
-      const string = JSON.stringify(fil);
-      localStorage.setItem("name",string);
-      toggleCart();
-      const Toast = Swal.mixin({
-        toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
-      });
-      Toast.fire({
-        icon: "error", title: "Product removed successfully",
-      });
-  }
+  const remove = (id) => {
+    const storageData = localStorage.getItem("name");
+    if (!storageData) return;
 
+    const jsonObject = JSON.parse(storageData);
+    const fil = jsonObject.filter((val) => val.id !== id);
+    localStorage.setItem("name", JSON.stringify(fil));
+    toggleCart();
 
-if(data.length !== 0 ){
+    if (fil.length === 0) {
+      setData([]);
+      setValue([]);
+      setTotalPrice(0);
+      setOpenCart(false); //  auto close when last item removed
+    }
 
-return (<>
-<div className="relative">
-    <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
-      <ShoppingBag />
-      {value.length && (
-          <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
-            {data.length}
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+    Toast.fire({
+      icon: "error",
+      title: "Product removed successfully",
+    });
+  };
+
+  if (data.length === 0) {
+    return (
+      <div className="relative">
+        <button
+          disabled
+          className="flex items-center justify-center gap-3 text-gray-400 cursor-not-allowed transition-colors"
+        >
+          <ShoppingBag />
+          <span className="absolute -top-1 -right-1 bg-gray-300 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
+            0
           </span>
-      )}
-    </button>
-  
-
-  {/* Overlay */}
-  {openCart && (
-    <div className="fixed inset-0 bg-gray-50/50  z-40 cursor-default" onClick={() => setOpenCart(false)}/>
-  )}
-  
-  {/* Sliding Cart */}
-  <div className={`fixed cursor-default top-0 right-0 h-full w-[300px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
-    <div className="p-4">
-        {/* header */}
-      <div className="bg-blue-600 rounded-sm text-white p-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5" />
-            Shopping Cart {data.length}
-        </h3>
-        <button className="hover:bg-white/20 rounded-full p-1 transition-colors" onClick={()=> setOpenCart(!openCart)}>
-            <X className="w-5 h-5" />
         </button>
       </div>
-      {/* Content  */}
-      { false ? (<>
-          <div className="p-8 text-center  text-gray-400">
-          <ShoppingBag className="w-16 h-16 mx-auto mb-3 opacity-30 " />
-          <p>Your cart is empty</p>
-        </div>
-        </>) :(<>
-          {value.map((value,id)=>(
-            <div key={id} className="max-h-[400px] overflow-y-auto">
-            <div className="py-2 space-y-3">
-                <div  className="flex gap-3 bg-gray-50 rounded-md  hover:bg-gray-100 transition-colors group" >
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-white">
-                        <img  src={value?.images[0]?.src || "image1.jpg"}  alt="23"  className="w-full h-full object-cover"/>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        className="flex items-center justify-center gap-3 hover:text-blue-600 cursor-pointer transition-all"
+        onClick={() => setOpenCart(!openCart)}
+      >
+        <ShoppingBag />
+        <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
+          {data.length}
+        </span>
+      </button>
+
+      {openCart && (
+        <>
+          <div className="fixed inset-0 bg-gray-800/40 z-40 backdrop-blur-sm animate-fadeIn"
+            onClick={() => setOpenCart(false)} />
+
+          <div className={`fixed cursor-default top-0 right-0 h-full w-[500px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
+
+            <div className="p-5 flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between border-b pb-4">
+                <h3 className="text-xl font-semibold text-blue-600 flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5" />
+                  Cart ({data.length})
+                </h3>
+                <button className="hover:bg-gray-200 rounded-full p-1 transition" onClick={() => setOpenCart(false)}>
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
+
+              {/* Products */}
+              <div className="flex-1 overflow-y-auto py-4 space-y-3">
+                {value.map((item, id) => (
+                  <div key={id} className="flex gap-3 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-all group">
+                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
+                      <img src={item?.images?.[0]?.src || "placeholder.jpg"} alt={item.name} className="w-full h-full object-cover"/>
                     </div>
-                    <div className="grid grid-rows-2">
-                        <h4 className="font-medium text-gray-800 text-sm leading-4 line-clamp-3">{value.name}</h4>
-                        <p className="text-blue-600 font-semibold text-sm mt-1">{value.price} * {value.qty} = {value.price * value.qty}</p>
+                    <div className="flex flex-col justify-between flex-1">
+                      <h4 className="font-medium text-gray-800 text-sm leading-tight">
+                        {item.name}
+                      </h4>
+                      <p className="text-blue-600 font-semibold text-sm">
+                        {item.price} × {item.qty} ={" "}
+                        <span className="text-black">
+                          {item.price * item.qty}
+                        </span>
+                      </p>
                     </div>
-                    <button onClick={()=>remove(value.id)} className="cursor-pointer self-start opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-100 text-red-500 rounded-full p-1.5">
-                        <X className="w-4 h-4" />
+                    <button onClick={() => remove(item.id)} className="opacity-0 group-hover:opacity-100 w-6 h-6 text-red-500 hover:bg-red-100 rounded-full p-1 transition">
+                      <X className="w-4 h-4" />
                     </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-gray-200 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-gray-600 font-medium">Total:</span>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {totalPrice}
+                  </span>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={() => {
+                      setOpenCart(false);
+                      router.push("/cart");
+                    }}
+                    className="w-full hover:bg-blue-600 bg-white text-gray-700 hover:text-white border-2 border-gray-300 hover:border-blue-600 py-2 rounded-xl font-semibold duration-300"
+                  >
+                    View Cart
+                  </button>
+                  <button onClick={() => { setOpenCart(false);
+                   router.push("/checkout"); }}
+                    className="w-full bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300">
+                    Checkout
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>))}
-      </>)}
-      {/* footer */}
-      <div className="border-t border-gray-200 py-2 bg-gray-50">
-        <div className="flex items-center justify-between mb-3">
-            <span className="text-gray-600 font-medium">Total:</span>
-            <span className="text-2xl font-bold text-gray-800">{totalPrice}</span>
-        </div>
-        <div className="grid grid-cols-2 gap-4" >
-          <button  onClick={()=>router.push("/cart")}
-          className="w-full hover:bg-blue-600 cursor-pointer bg-white text-black hover:text-white hover:border-blue-600 border-gray-400 border-2 py-2 rounded-xl font-semibold duration-300 ">
-              View Cart
-          </button>
-          <button onClick={()=>router.push("/checkout")}
-          className="w-full bg-blue-600 cursor-pointer text-white py-2 rounded-xl font-semibold  transition-all duration-300 hover:shadow-lg">
-              Checkout
-          </button>
-        </div>
-      </div>
+          </div>
+        </>
+      )}
     </div>
-  </div>
-</div>
-  </>)
+  );
+};
 
-}
-
-return(<>
-
-<div className="relative">
-    <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
-      <ShoppingBag />
-          <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
-              0
-          </span>
-    </button>
-</div>
-
-</>)
-
-}
-
-export default Cart
+export default Cart;

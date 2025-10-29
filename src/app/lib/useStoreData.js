@@ -10,7 +10,7 @@ const useStoreData = create((set) => ({
   minPrice: 10000,
   maxPrice: 90000,
   showProduct :"12",
-  select : 'date,desc',
+  select : 'date,desc', 
   filter : null,
   
   setMinPrice: (minPrice) => set({ minPrice }),

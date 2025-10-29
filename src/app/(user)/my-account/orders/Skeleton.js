@@ -13,7 +13,7 @@ export default function Skeleton() {
           <div className="text-sm font-semibold text-gray-900 uppercase">ACTIONS</div>
         </div>
 
-        {[1, 2, 3].map((item) => (
+        {[1, 2, 3,4].map((item) => (
           <div key={item} className="grid grid-cols-5 gap-4 py-6 border-b border-gray-200 animate-pulse">
             <div className="flex items-center">
               <div className="h-5 bg-gray-200 rounded w-16"></div>

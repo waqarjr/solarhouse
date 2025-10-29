@@ -1,119 +1,154 @@
-"use client"
-import React, { useState,useEffect } from 'react';
-import { ChevronRight, Trash2 } from 'lucide-react';
-import axios from 'axios';
+"use client";
+import React, { useState, useEffect } from "react";
+import { ChevronRight, Trash2, ShoppingBag } from "lucide-react";
+import axios from "axios";
 import useStoreData from "@/app/lib/useStoreData";
-import { useRouter } from 'next/navigation';
-import Swal from 'sweetalert2';
-import { ShoppingBag } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
+import CartSkeleton from "./Skeleton";
+import api from "@/app/lib/api";
 
-
-const  Page = ()=> {
-  const {cart,toggleCart} = useStoreData();
+const Page = () => {
+  const { cart, toggleCart } = useStoreData();
   const [value, setValue] = useState([]);
-  const [data ,setData ] = useState([])
-  const [totalPrice ,setTotalPrice] = useState(0);
+  const [data, setData] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [emptyCart, setEmptyCart] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  try{
-    const getData = async (string)=>{
-      if (!string) return;
-      try{
-            const response = await axios.get(
-            `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
-            {
-              auth: {
-                username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-                password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-              }
-            }
-          );
-          setData(response.data);
-            const Toast = Swal.mixin({
-              toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
-            });
-            Toast.fire({
-              icon: "success", title: "Product quantity updated successfully",
-            });
-        }catch (e){
+  // ✅ Fetch Data Effect
+  useEffect(() => {
+    const getData = async (string) => {
+      try {
+        const response = await api.get(`/products?include=${string}`);
+        setData(response.data);
+        Swal.fire({
+          icon: "success",
+          title: "Product quantity updated successfully",
+          toast: true,
+          position: "top-end",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (e) {
         console.error(e.message);
-      } 
-    }
-    
-    useEffect(()=>{
-      if( localStorage.getItem("name")){
-        const storageData = localStorage.getItem("name");
-        const jsonObject= JSON.parse(storageData);
-        const idData = jsonObject.map((value)=> {return  value.id});
-        const string = idData.join(','); 
-        getData(string);
+        setEmptyCart(true);
+      } finally {
+        setLoading(false);
       }
-    },[cart])
+    };
 
-    useEffect(() => {
-      const storageData = localStorage.getItem("name");
-      if (!storageData || data.length === 0) return;
-  
+    // ✅ Load Local Storage & Fetch Products
+    const storageData = localStorage.getItem("name");
+    if (storageData) {
       const jsonObject = JSON.parse(storageData);
-  
-      const merged = data.map((item) => {
-        const match = jsonObject.find((q) => q.id === item.id);
-        return { ...item, ...match };
-      });
-      const total = merged.reduce(
-        (sum, item) => sum + Number(item.price) * Number(item.qty),
-        0
+      const idData = jsonObject.map((v) => v.id);
+      if (!idData.length) {
+        setEmptyCart(true);
+        setLoading(false);
+        return;
+      }
+
+      const string = idData.join(",");
+      getData(string);
+    } else {
+      setEmptyCart(true);
+      setLoading(false);
+    }
+  }, [cart]);
+
+  // ✅ Merge Data and Calculate Total
+  useEffect(() => {
+    const storageData = localStorage.getItem("name");
+    if (!storageData || data.length === 0) return;
+
+    const jsonObject = JSON.parse(storageData);
+
+    const merged = data.map((item) => {
+      const match = jsonObject.find((q) => q.id === item.id);
+      return { ...item, ...match };
+    });
+
+    const total = merged.reduce(
+      (sum, item) => sum + Number(item.price) * Number(item.qty),
+      0
+    );
+
+    setTotalPrice(total);
+    setValue(merged);
+  }, [data]);
+
+  //  Handle Quantity Change
+  const changeQuantity = (quantity, id) => {
+    if (localStorage.getItem("name")) {
+      const existingData = JSON.parse(localStorage.getItem("name"));
+      const updatedData = existingData.map((item) =>
+        item.id === id ? { ...item, qty: quantity } : item
       );
-      setTotalPrice(total);
-      setValue(merged);
-    }, [data]);  
+      localStorage.setItem("name", JSON.stringify(updatedData));
+    }
+    toggleCart();
+  };
 
-  } catch(error) {
-    console.error(error.message,"Your cart is empty")
-  }
+  //  Handle Remove Item
+  const remove = (id) => {
+    const storageData = localStorage.getItem("name");
+    if (!storageData) return;
 
-  const changeQuantity = (quantity,id)=>{
-      if(localStorage.getItem("name")) {
-        const existingData = JSON.parse(localStorage.getItem("name"));
-        const filter =  existingData.filter((v)=> v.id === id);
-        if(filter.length) { 
-          filter[0].qty = quantity;
-          localStorage.setItem("name", JSON.stringify(existingData));
-        }
-        else {
-          const updatedData = [...existingData, {id : id , qty: quantity}];
-          localStorage.setItem("name", JSON.stringify(updatedData));
-        }
-      } else {
-        const existingData =  [];
-        const updatedData = [...existingData, {id : id , qty: quantity}];
-        localStorage.setItem("name", JSON.stringify(updatedData));
-      }  
-      toggleCart();
-  }
+    const jsonObject = JSON.parse(storageData);
+    const filtered = jsonObject.filter((val) => val.id !== id);
+    localStorage.setItem("name", JSON.stringify(filtered));
 
+    toggleCart();
+    Swal.fire({
+      icon: "error",
+      title: "Product removed successfully",
+      toast: true,
+      position: "top-end",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  };
 
-  const remove = (id)=>{
-      const storageData = localStorage.getItem("name");
-      if (!storageData) return;
-      const jsonObject= JSON.parse(storageData);
-      const fil = jsonObject.filter(val => val.id !== id);
-      const string = JSON.stringify(fil);
-      localStorage.setItem("name",string);
-      toggleCart();
-      const Toast = Swal.mixin({
-          toast: true, position: "top-end", timer: 2000, timerProgressBar: true,showConfirmButton: false,
-        });
-        Toast.fire({
-          icon: "error", title: "Product removed successfully",
-        });
-  }
+  // Loading State
+  if (loading) return <CartSkeleton />;
 
-
-  
-
-if(data.length !== 0 ){
+  //  Empty Cart UI
+  if (emptyCart) {
     return (
+      <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
+            <span className="hover:text-gray-900 cursor-pointer">Home</span>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-gray-900 font-medium">Cart</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Cart</h1>
+        </div>
+
+        <div className="bg-cyan-500 rounded-lg shadow-sm sm:p-16 lg:p-12">
+          <div className="flex flex-col items-center justify-center text-center gap-8">
+            <ShoppingBag className="w-24 h-24 sm:w-32 sm:h-32 text-white stroke-[1.5]" />
+            <p className="text-white text-lg sm:text-xl font-light mb-12">
+              Your cart is currently empty.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center my-4">
+          <button
+            onClick={() => router.push("/shop")}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-3 rounded-md transition-colors duration-200"
+          >
+            Return To Shop
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="min-h-screen ">
       {/* Breadcrumb */}
       <div className="bg-white ">
@@ -223,41 +258,6 @@ if(data.length !== 0 ){
       </div>
     </div>
   );
-}
+};
 
-return(<>
-      <div className="min-h-screen px-4 py-8 sm:px-6 lg:px-8 max-w-7xl mx-auto ">
-
-        <div className=" px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-            <span className="hover:text-gray-900 cursor-pointer">Home</span>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">Cart</span>
-          </div>
-          
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900">Cart</h1>
-
-        </div>
-
-
-
-        <div className="bg-cyan-500 rounded-lg shadow-sm  sm:p-16 lg:p-12 ">
-          <div className="flex flex-col items-center justify-center text-center gap-8">
-              <ShoppingBag className="w-24 h-24 sm:w-32 sm:h-32 text-white stroke-[1.5]" />
-              <p className="text-white text-lg sm:text-xl font-light mb-12">
-                Your cart is currently empty.
-              </p>
-          </div>
-        </div>
-
-        <div className='flex items-center justify-center my-4' >
-          <button onClick={()=>router.push('/shop')} className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-8 py-3 rounded-md transition-colors duration-200 ">
-            Return To Shop
-          </button>
-        </div>
-      </div>
-
-</>)
-
-}
 export default Page;

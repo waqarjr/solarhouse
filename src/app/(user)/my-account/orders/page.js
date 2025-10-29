@@ -13,7 +13,7 @@ const page = () => {
   const {user} = useStoreData();
   const [data , setData] = useState([])
   const [noData, setNoData] = useState(false);
-  const [loading , setLoading] = useState(false);
+  const [loading , setLoading] = useState(true);
 
   
   const getData = async()=>{
@@ -23,11 +23,9 @@ const page = () => {
   if (response.data.valid)
     {
       setLoading(true);
-      setNoData(false);
       setData(response.data.message)
     } 
     else setNoData(true);
-
   } catch (error) {
     console.log(error.message);
   }finally {

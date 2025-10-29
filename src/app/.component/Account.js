@@ -7,15 +7,20 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import useStoreData from "../lib/useStoreData";
+
 
 const Account = () => {
 
+const {valid, setUser, clearUser,user } = useStoreData();
+
 const [openCart ,setOpenCart] = useState(false);
 const [register , setRegister] = useState(true);
-const [valid, setValid] = useState(true);
 const [error ,setError] = useState(false);
 const router = useRouter();
 const [signupError , setSignupError] = useState(false);
+const [loading , setLoading] = useState(false);
+
 
 const validationSchema = Yup.object({
     email: Yup.string().email().required(),
@@ -33,18 +38,18 @@ const formik = useFormik({
     try{ 
       const response = await axios.post("/api/auth/login",values)
           if(response.data.valid) {
+            setLoading(true);
+            setUser(response.data.message);
             Swal.fire({
-            title: `${response.data.message}`,
-            text: "Welcome back 👋",
-            icon: "success",
-            confirmButtonText: "Continue",
-            confirmButtonColor: "#3085d6",
-            timer: 2500,
-            timerProgressBar: true,
+              title: `Welcome back 👋`,
+              icon: "success",
+              confirmButtonText: "Continue",
+              confirmButtonColor: "#3085d6",
+              timer: 2500,
+              timerProgressBar: true,
           });
-           setError(false);
           router.push("/my-account");
-        }
+        } else clearUser();
       }catch (error){
           if (error.response && error.response.status === 403) {
                 setError(true);
@@ -65,6 +70,8 @@ const formik = useFormik({
                   confirmButtonText: "OK",
                 });
               }
+      } finally {
+
       }
   }
 })
@@ -103,33 +110,57 @@ const handRegis = useFormik({
   }
 })
 
-const logout = async ()=>{
+const fetchData = async()=>{
   try{
-    const responce =  await axios.post('/api/auth/logout')
-    if(responce.data.valid) {
-      router.push('/');
-    }
-  }catch(error){
-    console.error(error.message);
+  setLoading(true);
+  const response  = await axios.post('/api/auth/verify');
+  if(response.data.valid) setUser(response.data.message);
+    else clearUser();
+  } catch {
+    clearUser();
+  }finally{
+    setLoading(false);
   }
+
 }
 
 useEffect(()=>{
-  const value = localStorage.getItem("isopen");
-  if(value != null && value != undefined && value != false) {
-    setValid(true);
-  } else {
-    setValid(false);
-  }
+  fetchData();     
 },[])
 
-return (<>
-  <div className="relative group">
-      <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
+
+
+
+const logout = async ()=>{
+Swal.fire({
+  title: "Do you want to logout your account?",
+  showCancelButton: true,
+  confirmButtonText: "Yes",
+}).then( async (result) => {
+  if (result.isConfirmed) {
+    try{
+      setLoading(true);
+      const responce =  await axios.post('/api/auth/logout')
+      if(responce.data.valid) clearUser();
+      Swal.fire("Logout successfully !", "", "success");
+      router.push('/my-account');
+    }catch(error){
+      Swal.fire("fail to logout !", "", "error");
+    } finally {
+      setLoading(false);
+    }
+  } 
+});
+}
+
+
+if(valid) {
+  return(<>
+    <div className="relative group">
+      <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" >
         <User />
       </button>
-      { false? (<>
-          <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
+  <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
                     translate-y-2 opacity-0 invisible
                     group-hover:translate-y-0 group-hover:opacity-100 group-hover:visible
                     transition-all duration-300 ease-in-out
@@ -152,9 +183,20 @@ return (<>
         </li>
         <li onClick={()=>{logout()}} className="text-red-600 hover:!bg-red-100">Log out</li>
       </ul>
-      </>) : (<>
-        {openCart && (
-        <div className="fixed inset-0 bg-gray-50/50  z-40 cursor-default" onClick={() => setOpenCart(false)}/>
+    </div>
+  </>)
+}
+
+
+return (<>
+  <div className="relative group">
+      <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" onClick={() => setOpenCart(!openCart)}>
+        <User />
+      </button>
+      
+        
+      {openCart && (
+        <div className="fixed inset-0 bg-gray-800/40 z-40 backdrop-blur-sm animate-fadeIn" onClick={() => setOpenCart(false)}/>
     )}
     
     <div className={`fixed cursor-default top-0 right-0 h-full w-[500px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -184,7 +226,7 @@ return (<>
                   <input type="checkbox"/>
                   <label className="font-bold text-black ">Remember me</label>
                 </div>  
-                <button  type="submit" className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-md transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" >
+                <button type="submit" className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-200 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                   Login
                 </button>
           </form>
@@ -192,7 +234,7 @@ return (<>
         <div>
           <p className="text-black w-[150px] border-b-2 border-black mx-4 my-1" >Lost your password ?</p>
           <p className="text-center text-black my-1">Not a member? 
-          &nbsp;<span className="text-black border-b-2 border-black hover:cursor-pointer " onClick={()=>{setRegister(!register)}} >Register</span>
+          &nbsp;<span className="text-black border-b-2 border-black hover:cursor-pointer " onClick={()=>{setRegister(!register)}}  >Register</span>
           </p>
         </div>
       </div>) :(
@@ -234,7 +276,6 @@ return (<>
       </div>
       )}
     </div>
-      </>)}
 
 
   </div>

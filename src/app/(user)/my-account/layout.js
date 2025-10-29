@@ -9,6 +9,7 @@ import * as Yup from "yup";
 import { useFormik,} from 'formik';
 import useStoreData from '@/app/lib/useStoreData';
 import Swal from 'sweetalert2';
+import { useRouter } from "next/navigation";
 
 
 export default function Layout({ children }) {
@@ -16,7 +17,7 @@ export default function Layout({ children }) {
   
   const [invalidLogin , setInvalidLogin] = useState(false);
   const [loading , setLoading] = useState(true);
-
+  const router = useRouter();
   const pathName = usePathname();
 
   
@@ -108,6 +109,7 @@ Swal.fire({
       setLoading(true);
       const responce =  await axios.post('/api/auth/logout')
       if(responce.data.valid) clearUser();
+      router.push('/my-account');
       Swal.fire("Logout successfully !", "", "success");
     }catch(error){
       Swal.fire("fail to logout !", "", "error");
@@ -166,6 +168,7 @@ const handlePassword  = (e)=>{
     if (invalidLogin) setInvalidLogin(false); 
   formik.handleChange(e);
 }
+
 
 
 // login , signup

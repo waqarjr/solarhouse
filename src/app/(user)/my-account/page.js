@@ -4,8 +4,10 @@ import React from 'react'
 import useStoreData from '@/app/lib/useStoreData'
 import Swal from 'sweetalert2'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 const page = () => {
+  const router = useRouter();
   const {user,clearUser} = useStoreData();
  const logout = async ()=>{
     Swal.fire({
@@ -16,7 +18,8 @@ const page = () => {
       if (result.isConfirmed) {
         try{
           const responce =  await axios.post('/api/auth/logout')
-          if(responce.data.valid) clearUser();
+          if(responce.data.valid) clearUser() ;
+            router.push('/my-account');
           Swal.fire("Logout successfully !", "", "success");
         }catch(error){
           Swal.fire("fail to logout !", "", "error");

@@ -46,7 +46,7 @@ const ItemsSection = () => {
       getApiTags(); 
     },[])
 
-if(true) return <FilterSkeleton/>
+// if(true) return <FilterSkeleton/>
 
   return (<>
   <div className='grid [&>*]:border-gray-100 ' >

@@ -10,9 +10,9 @@ export default function SlidePerView() {
 
   useEffect(() => {
     const updateSlidesPerView = () => {
-      if (window.innerWidth >= 1024) setSlidesPerView(4); // lg
-      else if (window.innerWidth >= 768) setSlidesPerView(3); // md
-      else if (window.innerWidth >= 640) setSlidesPerView(2); // sm
+      if (window.innerWidth >= 1024) setSlidesPerView(4); 
+      else if (window.innerWidth >= 768) setSlidesPerView(3); 
+      else if (window.innerWidth >= 640) setSlidesPerView(2);
       else setSlidesPerView(1);
     };
 

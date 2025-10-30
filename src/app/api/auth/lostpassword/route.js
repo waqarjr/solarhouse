@@ -10,12 +10,14 @@ export async function POST(req) {
 
     const resetData = await axios.get(`https://solarhouse.pk/wp-json/custom-api/v3/reset-password?email=${regis}`);
 
-    console.log(resetData.data,username);
-
     if (resetData.data.status === "error") {
       return NextResponse.json({ valid: false, message: resetData.data.message }, { status: 400 });
     }
     const link = resetData.data.reset_link ;
+
+
+    const newLink = link.replace("https://solarhouse.pk", "http://localhost:3000");
+
 
 
     const transporter = nodemailer.createTransport({
@@ -47,7 +49,7 @@ export async function POST(req) {
                  <div style="font-size: 14px; color: #333;">
                    <div><strong>Username:</strong> ${username}</div>
                    <div style="margin-top: 10px;">
-                     <a href="${link}" style="color: #3b82f6;">Set your new password</a>
+                     <a href="${newLink}" style="color: #3b82f6;">Set your new password</a>
                    </div>
                  </div>
                </div>

@@ -37,16 +37,16 @@ const Footer = () => {
                         <h3 className="text-xl font-bold mb-4">Quick links</h3>
                         <ul className="space-y-3">
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> My account </Link>
+                                <Link href="/my-account" className="text-gray-300 hover:text-white transition-colors text-sm"> My account </Link>
                             </li>
                             <li> 
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Shopping Cart </Link>
+                                <Link href="/cart" className="text-gray-300 hover:text-white transition-colors text-sm"> Shopping Cart </Link>
                             </li>
                             <li>
                                 <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Wishlist </Link>
                             </li>
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Checkout </Link>
+                                <Link href="/checkout" className="text-gray-300 hover:text-white transition-colors text-sm"> Checkout </Link>
                             </li>
                         </ul>
                     </div>
@@ -56,16 +56,16 @@ const Footer = () => {
                         <h3 className="text-xl font-bold mb-4">Information</h3>
                         <ul className="space-y-3">
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm">  Privacy Policy </Link>
+                                <Link href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors text-sm">  Privacy Policy </Link>
                             </li>
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Refund Policy </Link>
+                                <Link href="/refund-and-returns-policy" className="text-gray-300 hover:text-white transition-colors text-sm"> Refund Policy </Link>
                             </li>
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Shipping & Return </Link>
+                                <Link href="/shipping-return-policy" className="text-gray-300 hover:text-white transition-colors text-sm"> Shipping & Return </Link>
                             </li>
                             <li>
-                                <Link href="#" className="text-gray-300 hover:text-white transition-colors text-sm"> Term & Conditions</Link>
+                                <Link href="/terms-conditions" className="text-gray-300 hover:text-white transition-colors text-sm"> Term & Conditions</Link>
                             </li>
                         </ul>
                     </div>

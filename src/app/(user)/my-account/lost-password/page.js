@@ -1,13 +1,18 @@
 'use client'
 import * as Yup from "yup";
 import { useFormik} from 'formik';
-import React from 'react'
+import React, { useEffect } from 'react'
 import axios from "axios";
-
+import { useSearchParams } from "next/navigation";
 
  
 const page = () => {
   
+   const searchParams = useSearchParams();
+  const key = searchParams.get("key");
+  const login = searchParams.get("login");
+
+
   const handRegis = useFormik({
     initialValues : { regis :"",},
     validationSchema :  Yup.object({ regis : Yup.string().email().required(),}),
@@ -17,14 +22,31 @@ const page = () => {
     }
   })
 
+if( key && login) {
+
+  useEffect(()=>{
+    
+  },[])
+
+  return(<>  
+        <div>
+          <h1>Reset Password</h1>
+          <p>Key: {key}</p>
+          <p>Login: {login}</p>
+      </div>
+</>)
+}
+
+
 
   return (
  <div className='w-full max-w-[400px] mx-auto min-h-[400px] grid grid-cols-1 place-items-center p-6 rounded-lg '>
   <div className='w-full flex flex-col items-center justify-center gap-10'>
     <div className='w-full'>
       <p className='text-center text-gray-700 text-sm md:text-base leading-relaxed'>
-        Lost your password? Please enter your username or email address. You will receive a link to create a new password via email
+        Lost your password? Please enter your  email address. You will receive a link to create a new password via email
       </p>
+
     </div>
     <div className='w-full'>
       <form onSubmit={handRegis.handleSubmit} className="w-full space-y-4">

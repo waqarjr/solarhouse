@@ -6,6 +6,8 @@ import api from '../lib/api';
 import PriceSlidebar from "@/app/.component/PriceSlidebar";
 import useStoreData from '../lib/useStoreData';
 import { useRouter } from 'next/navigation';
+import FilterSkeleton from "@/app/.component/FilterSkeleton";
+
 
 const ItemsSection = () => {
       
@@ -16,6 +18,7 @@ const ItemsSection = () => {
     const [apiTags , setApiTags] = useState([]);
     const { minPrice, maxPrice, showProduct ,select ,filter, setFilter} =  useStoreData();
     const router = useRouter();        
+  
     useEffect(()=>{
       
       console.log(minPrice,maxPrice,filter,showProduct ,select);
@@ -43,7 +46,7 @@ const ItemsSection = () => {
       getApiTags(); 
     },[])
 
-
+if(true) return <FilterSkeleton/>
 
   return (<>
   <div className='grid [&>*]:border-gray-100 ' >

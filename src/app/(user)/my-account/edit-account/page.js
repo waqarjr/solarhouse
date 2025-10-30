@@ -37,28 +37,7 @@ const page = () => {
     <input type="email" autoComplete='email' className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
   </div>
 
-  <div className="mb-6">
-    <h3 className="text-lg font-semibold text-gray-900 mb-6">Password change</h3>
-    
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-900 mb-2">
-        Current password (leave blank to leave unchanged)
-      </label>
-      <input type="password" autoComplete='password' className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-    </div>
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-900 mb-2">
-        New password (leave blank to leave unchanged)
-      </label>
-      <input type="password" autoComplete='new-password' className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-    </div>
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-900 mb-2">
-       Confirm new password
-      </label>
-      <input type="password" autoComplete='confirmPassword' className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
-    </div>
-  </div>
+
 
   </form>
   </>)

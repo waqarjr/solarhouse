@@ -5,7 +5,7 @@ import api from '../lib/api';
 import { useState,useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useStoreData from "@/app/lib/useStoreData";
-
+import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
 const Products = () => {
     const {showProduct,setShowProduct,select,setSelect} = useStoreData();
 
@@ -14,6 +14,8 @@ const Products = () => {
     const router = useRouter();
     const {toggleCart} = useStoreData();    
     const [ changeDiv,setChangeDiv] = useState(false);
+
+
     const cartData = (id) => {
       if(localStorage.getItem("name")) {
         const existingData = JSON.parse(localStorage.getItem("name"));
@@ -45,6 +47,9 @@ const Products = () => {
   useEffect(()=>{
     getData();
   },[showProduct,select])
+
+  if(true ) return <ProductGridSkeleton/>
+
   return (<>  
   <div className='flex flex-col' >
         {/* header */}

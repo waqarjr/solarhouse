@@ -2,6 +2,7 @@
 import * as Yup from "yup";
 import { useFormik} from 'formik';
 import React from 'react'
+import axios from "axios";
 
 
  
@@ -10,12 +11,9 @@ const page = () => {
   const handRegis = useFormik({
     initialValues : { regis :"",},
     validationSchema :  Yup.object({ regis : Yup.string().email().required(),}),
-    onSubmit : async(values,)=>{
-      console.log(values);""
-    //  const password = Math.floor(Math.random()*1000000).toString();
-    //   const newValue = {...values ,...{username  : values.regis.split("@")[0] , password : password}}
-    //   const response = await axios.post("/api/auth/signup",newValue);
-    //   if(response.data.valid) router.push("/my-account");
+    onSubmit : async(values)=>{
+        const responce = await axios.post('/api/auth/lostpassword',values);
+        console.log(responce.data);
     }
   })
 

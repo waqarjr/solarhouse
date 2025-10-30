@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import Header from './Header'
-import { LayoutDashboard, Package, Download, MapPin, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, Package, Download, MapPin, User, LogOut,Lock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'
 import axios from 'axios';
@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 
 
 export default function Layout({ children }) {
-  const {valid, setUser, clearUser,user } = useStoreData();
+  const {valid, setUser, clearUser, } = useStoreData();
   
   const [invalidLogin , setInvalidLogin] = useState(false);
   const [loading , setLoading] = useState(true);
@@ -27,6 +27,7 @@ const menuItems = [
     { icon: Download, label: "Downloads", href:"/my-account/downloads" },
     { icon: MapPin, label: "Addresses", href:"/my-account/edit-address" },
     { icon: User, label: "Account details", href:"/my-account/edit-account" },
+    { icon: Lock, label: "Reset Password", href:"/my-account/reset-password" },
   ];
 
 
@@ -155,9 +156,6 @@ if(valid)
 }
 
 
-
-
-
 // for handle false in after get true 
 const handleChange = (e)=>{
     if (invalidLogin) setInvalidLogin(false); 
@@ -170,14 +168,13 @@ const handlePassword  = (e)=>{
 }
 
 
-
 // login , signup
 return (<>
 <Header/>
 <div className=" flex items-center justify-center bg-white px-4">
   { pathName === "/my-account"  ? 
   (<>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-6xl bg-white  p-8 md:p-10">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full max-w-6xl bg-white  p-8 md:p-10">
 
     <div className="grid gap-6">
       <div className="text-black text-center">

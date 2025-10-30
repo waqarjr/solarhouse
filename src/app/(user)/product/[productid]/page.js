@@ -6,6 +6,7 @@ import axios from 'axios'
 import Link from 'next/link'
 import Image from 'next/image'
 import useStoreData from '@/app/lib/useStoreData'
+import api from '@/app/lib/api'
 
 const ProductPage = () => {
     const { productid } = useParams()
@@ -26,15 +27,7 @@ const ProductPage = () => {
 
     const getApiProducts = async ()=>{
       try{
-        const response = await axios.get(
-        `https://solarhouse.pk/wp-json/wc/v3/products?slug=${productid}`,
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
+        const response = await api.get(`/products?slug=${productid}`)
       setApiProducts(response.data)
       }catch (e){
         console.log(e.message);

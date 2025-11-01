@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import axios from "axios";
+import api from "@/app/lib/api";
 
 export async function POST(req) {
   try {
-    const { regis } = await req.json();
+    const { email } = await req.json();
 
-    const username = regis.split("@")[0];
+    const username = email.split("@")[0];
 
-    const resetData = await axios.get(`https://solarhouse.pk/wp-json/custom-api/v3/reset-password?email=${regis}`);
+    const resetData = await axios.get(`https://solarhouse.pk/wp-json/custom-api/v3/reset-password?email=${email}`);
 
     if (resetData.data.status === "error") {
       return NextResponse.json({ valid: false, message: resetData.data.message }, { status: 400 });
@@ -17,7 +18,6 @@ export async function POST(req) {
 
 
     const newLink = link.replace("https://solarhouse.pk", "http://localhost:3000");
-
 
 
     const transporter = nodemailer.createTransport({
@@ -32,7 +32,7 @@ export async function POST(req) {
 
     const mailOptions = {
        from: '"Solar Store" <waqarjr03@gmail.com>',
-       to: regis,
+       to: email,
        subject: "Welcome to Solar House!",
        html: `
          <div style="font-family: Arial, sans-serif;">
@@ -90,4 +90,19 @@ export async function POST(req) {
     return NextResponse.json( { valid: false, message: error.message },{ status: 500 });
 
   }
+}
+
+export async function PUT(req) {
+  
+  try{
+    const {password , id} = await req.json();
+     await api.put(`/customers/${id}`,{
+      password : password.password
+    }) 
+    return NextResponse.json({valid:true },{status : 200})
+
+  }catch(error){
+    return NextResponse.json({valid:false},{status : 400})
+  }
+
 }

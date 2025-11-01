@@ -5,7 +5,7 @@ import { ChevronDown, } from 'lucide-react';
 import api from '../lib/api';
 import PriceSlidebar from "@/app/.component/PriceSlidebar";
 import useStoreData from '../lib/useStoreData';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import FilterSkeleton from "@/app/.component/FilterSkeleton";
 
 
@@ -18,12 +18,52 @@ const ItemsSection = () => {
     const [apiTags , setApiTags] = useState([]);
     const { minPrice, maxPrice, showProduct ,select ,filter, setFilter} =  useStoreData();
     const router = useRouter();        
-  
+    const searchParams = useSearchParams();
+
+    const productCategory = searchParams.get("product-cata");
+    const min_price = searchParams.get("min-price");
+    const max_price = searchParams.get("max-price");
+    const per_page = searchParams.get("per_page");
+    const orderby = searchParams.get("")
+    
+    // api.get(/products?category=75&min_price=10000&max_price=90000&per_page=12&orderby=date&order=desc)
+
+    const defaultValues = {
+      minPrice: 10000,
+      maxPrice: 90000,
+      filter: null,
+      showProduct: "12",
+      select: "date,desc",
+    };
+
     useEffect(()=>{
-      
-      console.log(minPrice,maxPrice,filter,showProduct ,select);
-      console.log(`/?product-cata=${filter}&min-price=${minPrice}&max-price=${maxPrice}&per_page=${showProduct}&orderby=${select}`);
+      const params = new URLSearchParams();
+
+    if (filter && filter !== defaultValues.filter)
+      params.append("product-cata", filter);
+
+    if (minPrice !== defaultValues.minPrice)
+      params.append("min-price", minPrice);
+
+    if (maxPrice !== defaultValues.maxPrice)
+      params.append("max-price", maxPrice);
+
+    if (showProduct !== defaultValues.showProduct)
+      params.append("per_page", showProduct);
+
+    if (select !== defaultValues.select) {
+      const [orderby, order] = select.split(",");
+      params.append("orderby", orderby);
+      if (order) params.append("order", order);
+    }
+
+    const query = params.toString();
+    const url = query ? `/shop?${query}` : "/shop";
+    router.replace(url); 
     },[minPrice,maxPrice,filter,showProduct ,select])
+
+
+
     const getApiCategories = async ()=>{
       try{
         const response = await api.get("/products/categories?per_page=100");
@@ -45,6 +85,8 @@ const ItemsSection = () => {
       getApiCategories();
       getApiTags(); 
     },[])
+
+
 
 // if(true) return <FilterSkeleton/>
 

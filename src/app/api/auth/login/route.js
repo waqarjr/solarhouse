@@ -7,7 +7,7 @@ export async function POST(req) {
     const { email, password } = await req.json();
     const username = email.split("@")[0];
 
-       const wpRes = await axios.post("https://solarhouse.pk/wp-json/jwt-auth/v1/token", {
+    const wpRes = await axios.post("https://solarhouse.pk/wp-json/jwt-auth/v1/token", {
         username: username,
         password: password,
     });

@@ -3,7 +3,8 @@ import { ChevronDown,Heart , Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import api from '../lib/api';
 import { useState,useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from "next/navigation"
+
 import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
 const Products = () => {
@@ -14,7 +15,7 @@ const Products = () => {
     const router = useRouter();
     const {toggleCart} = useStoreData();    
     const [ changeDiv,setChangeDiv] = useState(false);
-
+    const searchParams = useSearchParams();
 
     const cartData = (id) => {
       if(localStorage.getItem("name")) {
@@ -35,18 +36,54 @@ const Products = () => {
       }
     };
     
-    const getData = async ()=>{
-      try{
-      const response = await api.get(`/products?orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`)      
-      setTotalProducts(response.headers["x-wp-total"]); 
-      setProducts(response.data)
-      }catch (e){
-        console.log(e.message);
+    const defaultValues = {
+      minPrice: 10000,
+      maxPrice: 90000,
+      filter: null,
+      showProduct: "12",
+      select: "date,desc",
+    };
+
+    useEffect(() => {
+    const productCata = searchParams.get("product-cata") || defaultValues.filter;
+    const min_price = searchParams.get("min-price") || defaultValues.minPrice;
+    const max_price = searchParams.get("max-price") || defaultValues.maxPrice;
+    const per_page = searchParams.get("per_page") || defaultValues.showProduct;
+    const orderby = searchParams.get("orderby") || "date";
+    const order = searchParams.get("order") || "desc";
+
+    const fetchFilteredProducts = async () => {
+      try {
+        const query = `/products?${
+          productCata ? `category=${productCata}&` : ""
+        }min_price=${min_price}&max_price=${max_price}&per_page=${per_page}&orderby=${orderby}&order=${order}`;
+        const response = await api.get(query);
+        console.log("Filtered Products:", response.data);
+        setProducts(response.data);
+      } catch (e) {
+        console.error("Error fetching filtered products:", e.message);
       }
-    }
-  useEffect(()=>{
-    getData();
-  },[showProduct,select])
+    };
+
+    fetchFilteredProducts();
+  }, [searchParams]);
+
+
+  //   const getData = async ()=>{
+  //     try{
+  //     const response = await api.get(`/products?orderby=${select.split(",")[0]}&order=${select.split(",")[1]}&per_page=${showProduct}&page=1`)      
+  //     setTotalProducts(response.headers["x-wp-total"]); 
+  //     setProducts(response.data)
+  //     }catch (e){
+  //       console.log(e.message);
+  //     }
+  //   }
+
+    
+
+  // useEffect(()=>{
+  //   getData();
+  // },[showProduct,select])
 
   // if(true ) return <ProductGridSkeleton/>
 

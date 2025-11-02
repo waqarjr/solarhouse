@@ -9,32 +9,25 @@ const useStoreData = create((set) => ({
   minGap: 1000,
   minPrice: 10000,
   maxPrice: 90000,
-  showProduct :"12",
-  select : 'date,desc', 
-  filter : null,
+  showProduct: "12",
+  select: 'date,desc', 
+  filter: null,
   
+  setMinVal: (minVal) => set({ minVal }),
+  setMaxVal: (maxVal) => set({ maxVal }),
   setMinPrice: (minPrice) => set({ minPrice }),
-
   setMaxPrice: (maxPrice) => set({ maxPrice }),
+  setShowProduct: (value) => set({ showProduct: value }),
+  setSelect: (value) => set({ select: value }),
+  setFilter: (value) => set({ filter: value }),
   
-  setShowProduct : (value) => set({ showProduct: value }),
-  
-  setSelect : (value ) => set({select : value}),
+  payment: "cod,Cash on delivery",
+  setPayment: (value) => set({ payment: value }),
 
-  setFilter :(value ) => set( {filter : value} ),
-  
-  payment  : "cod,Cash on delivery",
-  setPayment  : (value) => set({payment : value}),
-
-  user : null,
+  user: null,
   valid: false,
   setUser: (userData) => set({ user: userData, valid: true }),
   clearUser: () => set({ valid: false }),
-  
 }));
 
 export default useStoreData;
-
-// ?product-cata=75&min-price=96292&max-price=361883&per_page=15&orderby=date
-
-// https://solarhouse.pk/wp-json/wc/v3/products?category=75&min_price=10000&max_price=90000&per_page=12&orderby=date&order=desc

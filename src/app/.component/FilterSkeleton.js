@@ -2,14 +2,12 @@ export default function FilterSkeleton() {
   return (
     <div className="hidden md:block w-full max-w-sm bg-white p-4">
       <div className="grid [&>*]:border-gray-100 animate-pulse">
-        {/* Category Section */}
         <div className="grid my-1 py-2 border-b-2">
           <div className="flex items-center justify-between mb-4">
             <div className="h-6 w-24 bg-gray-200 rounded"></div>
             <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
           </div>
           
-          {/* Category Items */}
           <div className="space-y-3">
             {[...Array(12)].map((_, i) => (
               <div key={i} className="flex items-center justify-between">
@@ -23,31 +21,7 @@ export default function FilterSkeleton() {
           </div>
         </div>
 
-        {/* Price Section */}
-        <div className="grid my-1 py-4 border-b-2">
-          <div className="flex items-center justify-between mb-4">
-            <div className="h-6 w-16 bg-gray-200 rounded"></div>
-            <div className="h-4 w-4 bg-gray-200 rounded-full"></div>
-          </div>
-          
-          {/* Price Slider */}
-          <div className="mb-4">
-            <div className="h-2 bg-gray-200 rounded-full"></div>
-          </div>
-          
-          {/* Min Max Price */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="h-3 w-20 bg-gray-200 rounded mb-2"></div>
-              <div className="h-5 w-24 bg-gray-200 rounded"></div>
-            </div>
-            <div className="h-4 w-4 bg-gray-200 rounded"></div>
-            <div className="flex-1">
-              <div className="h-3 w-20 bg-gray-200 rounded mb-2"></div>
-              <div className="h-5 w-24 bg-gray-200 rounded"></div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Tag Section */}
         <div className="grid my-1 py-4">

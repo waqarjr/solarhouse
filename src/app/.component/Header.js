@@ -47,9 +47,9 @@ const Header = () => {
                 {/* Desktop Header */}
                 <div className='hidden lg:grid grid-cols-[20%_auto_10%]  h-full'>
                     {/* Logo */}
-                    <div className='flex items-center '>
+                    <Link href="/" className='flex items-center '>
                         <Image src="/logo.png" width={230} height={0} priority alt="logo_image" className='w-auto' />
-                    </div>
+                    </Link>
 
                     {/* Navigation Links */}
                     <ul className='flex items-center justify-center gap-3 '>
@@ -86,7 +86,7 @@ const Header = () => {
                         <div className='flex items-center gap-3 [&>*]:hover:text-blue-500 [&>*]:cursor-pointer [&>*]:transition-colors'>
                             <Search className='w-5 h-5' />
                             <Heart className='w-5 h-5' />
-                            <ShoppingBag className='w-5 h-5' />
+                            <Link href="/cart" ><ShoppingBag className='w-5 h-5' /></Link>
                         </div>
                         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className='ml-2 p-2 hover:text-blue-500 transition-colors' aria-label='Toggle menu'>
@@ -115,7 +115,7 @@ const Header = () => {
                             })}
                         </ul>
                         <div className='mt-4 pt-4 border-t border-gray-200 flex gap-2' onClick={() => setIsMobileMenuOpen(false)}>
-                            <Account/><p>My Account</p>
+                           <Link href='/my-account' ><Account/>My Account</Link> 
                         </div>
                     </nav>
                 </div>

@@ -27,7 +27,6 @@ const menuItems = [
     { icon: Download, label: "Downloads", href:"/my-account/downloads" },
     { icon: MapPin, label: "Addresses", href:"/my-account/edit-address" },
     { icon: User, label: "Account details", href:"/my-account/edit-account" },
-    { icon: Lock, label: "Reset Password", href:"/my-account/reset-password" },
   ];
 
 
@@ -127,31 +126,39 @@ if(valid)
 {
   return (<>
   <Header/>
-  <div className="grid grid-cols-[20%_auto]  max-w-7xl mx-auto">
-    <aside className="">
-      <nav className="p-4">
-        {menuItems.map( item => {
-          const Icon = item.icon;
-          return (
-            <Link href={item.href} key={item.label} 
-            className={`flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer  hover:text-blue-500 transition-colors text-blue-500
-            ${pathName == item.href ? "text-blue-500" : "text-gray-700"}
-            `}>
-              <Icon className="w-6 h-6" />
-              <p className="text-base font-medium">{item.label}</p>
-            </Link>
-          );
-        })}
-        <button onClick={logout} className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors">
-              <LogOut className="w-6 h-6" />
-              <p className="text-base font-medium">Log Out</p>
-        </button>
-      </nav>
-    </aside>
-    <main className="p-8">
-      {children}
-    </main>
-  </div>
+<div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[20%_auto]">
+  {/* Sidebar */}
+  <aside className="block md:block">
+    <nav className="p-4">
+      {menuItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <Link
+            href={item.href}
+            key={item.label}
+            className={`flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer transition-colors 
+              ${pathName === item.href ? "text-blue-500" : "text-gray-700 hover:text-blue-500"}`}>
+            <Icon className="w-6 h-6" />
+            <p className="text-base font-medium">{item.label}</p>
+          </Link>
+        );
+      })}
+      <button
+        onClick={logout}
+        className="w-full flex items-center justify-start gap-3 border-b border-gray-200 py-4 px-2 my-2 cursor-pointer text-gray-700 hover:text-red-500 transition-colors"
+      >
+        <LogOut className="w-6 h-6" />
+        <p className="text-base font-medium">Log Out</p>
+      </button>
+    </nav>
+  </aside>
+
+  {/* Main Content */}
+  <main className="p-4 md:p-8">
+    {children}
+  </main>
+</div>
+
   </>)
 }
 

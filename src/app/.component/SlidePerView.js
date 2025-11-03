@@ -16,7 +16,6 @@ export default function SlidePerView() {
     { id: 4, title: 'VP Protectors', image: '/vaprotectors.webp' },
   ];
 
-  // Create infinite loop by duplicating slides
   const extendedSlides = [...slides, ...slides, ...slides];
   const startIndex = slides.length;
 
@@ -79,7 +78,7 @@ export default function SlidePerView() {
         </div>
 
         <div className="relative px-12 sm:px-16">
-          <button onClick={prevSlide} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full transition-all duration-300 bg-white text-gray-900 hover:bg-gray-100 hover:scale-110 shadow-lg" aria-label="Previous slides">
+          <button onClick={prevSlide} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full transition-all duration-300 bg-white text-gray-900  hover:scale-110 shadow-lg" aria-label="Previous slides">
             <ChevronLeft size={24} />
           </button>
 
@@ -106,13 +105,6 @@ export default function SlidePerView() {
           </button>
         </div>
 
-        <div className="mt-8 flex items-center justify-center gap-4">
-          <span className="flex gap-2">
-            {slides.map((_, index) => (
-              <button key={index} onClick={() => goToSlide(index)} className={`transition-all duration-300 rounded-full ${(currentIndex - startIndex) % slides.length === index ? 'bg-blue-500 w-8 h-2' : 'bg-gray-400 hover:bg-gray-500 w-2 h-2'}`} aria-label={`Go to slide ${index + 1}`} />
-            ))}
-          </span>
-        </div>
       </div>
     </div>
   );

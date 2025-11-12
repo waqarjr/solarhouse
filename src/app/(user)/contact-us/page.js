@@ -28,7 +28,7 @@ const ContactUs = () => {
       {/* Header Section */}
       <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white py-16 px-4">
         <div className="mx-auto max-w-7xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">We're here for you</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">We&apos;re here for you</h1>
           <p className="text-lg md:text-xl text-blue-100">Our friendly team is always here to chat.</p>
         </div>
       </div>

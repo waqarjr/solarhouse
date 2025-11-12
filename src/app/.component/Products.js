@@ -2,7 +2,7 @@
 import { ChevronDown, Heart, Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import api from '../lib/api';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from "next/navigation";
 import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
@@ -16,6 +16,7 @@ const Products = () => {
   const [changeDiv, setChangeDiv] = useState(false);
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
+  const [apiPricesFetched, setApiPricesFetched] = useState(false);
 
   const cartData = (id) => {
     if (localStorage.getItem("name")) {
@@ -35,19 +36,20 @@ const Products = () => {
     }
   };
 
-  const defaultValues = {
-    minPrice: minVal,
-    maxPrice: maxVal,
-    filter: null,
-    showProduct: "12",
-    select: "date,desc",
-  };
+  // Wait for minVal/maxVal to be set from API
+  useEffect(() => {
+    if (minVal !== 0 || maxVal !== 100000) {
+      setApiPricesFetched(true);
+    }
+  }, [minVal, maxVal]);
 
   useEffect(() => {
-    const productCata = searchParams.get("product-cata") || defaultValues.filter;
-    const min_price = searchParams.get("min-price") || defaultValues.minPrice;
-    const max_price = searchParams.get("max-price") || defaultValues.maxPrice;
-    const per_page = searchParams.get("per_page") || defaultValues.showProduct;
+    if (!apiPricesFetched) return;
+
+    const productCata = searchParams.get("product-cata") || null;
+    const min_price = searchParams.get("min-price") || minVal;
+    const max_price = searchParams.get("max-price") || maxVal;
+    const per_page = searchParams.get("per_page") || "12";
     const orderby = searchParams.get("orderby") || "date";
     const order = searchParams.get("order") || "desc";
 
@@ -65,17 +67,15 @@ const Products = () => {
     };
 
     fetchFilteredProducts();
-  }, [searchParams]);
+  }, [searchParams, apiPricesFetched, minVal, maxVal]);
 
-  if (loading) return <ProductGridSkeleton />;
+  if (loading || !apiPricesFetched) return <ProductGridSkeleton />;
 
   return (
     <div className='flex flex-col'>
-      {/* Header */}
       <div className='my-1 py-1 grid grid-cols-1 md:grid-cols-2 items-center gap-4'>
         <p className='text-gray-800 text-[15px] md:ml-9 hidden lg:block'>Showing 1-{Math.min(showProduct, totalProducts)} of {totalProducts} results</p>
         <div className='flex items-center justify-end gap-2 md:gap-4 mx-2'>
-          {/* Products per page */}
           <p className='[&>*]:p-1 gap-2 flex items-center justify-center text-sm md:text-base'>
             Show
             <span className={`${showProduct === "12" ? "border-black border-b-2" : ""} cursor-pointer hover:text-blue-500`} onClick={() => setShowProduct("12")}>12</span>
@@ -83,7 +83,6 @@ const Products = () => {
             <span className={`${showProduct === "30" ? "border-black border-b-2" : ""} cursor-pointer hover:text-blue-500`} onClick={() => setShowProduct("30")}>30</span>
           </p>
 
-          {/* Selection */}
           <div className="relative inline-flex items-center">
             <select onChange={(e) => setSelect(e.target.value)} className="appearance-none flex items-center justify-center px-3 md:px-4 py-2 pr-8 rounded-3xl border-2 border-gray-200 text-gray-700 font-semibold bg-white cursor-pointer hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition duration-200 text-sm md:text-base">
               <option value="date,desc">Default Sorting</option>
@@ -95,7 +94,6 @@ const Products = () => {
             <ChevronDown className="absolute right-3 text-gray-500 pointer-events-none group-hover:text-blue-500 transition duration-200" />
           </div>
 
-          {/* Change Div - Hidden on Mobile */}
           <div onClick={() => setChangeDiv(false)} className={`hidden md:block ${changeDiv ? "border-gray-200" : "bg-blue-500 stroke-white border-blue-500"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
             <svg width="30" height="20" viewBox="0 0 50 48" fill="none">
               <path d="M25 1H1V22H25V1Z" strokeWidth="3" />
@@ -115,7 +113,6 @@ const Products = () => {
         </div>
       </div>
 
-      {/* Products Grid */}
       <div className={`${changeDiv ? "hidden md:grid md:grid-cols-1 my-1" : "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8 my-6"} mx-2 md:mx-4`}>
         {products.map(value => (
           <div key={value.id} className={`${changeDiv ? "grid grid-cols-[30%_auto] gap-4 my-3 h-[250px] md:h-[300px]" : "h-[300px] md:h-[400px] w-full"} group relative overflow-hidden rounded-md cursor-pointer transition-all duration-300 hover:shadow-sm`}>

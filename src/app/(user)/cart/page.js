@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { ChevronRight, Trash2, ShoppingBag } from "lucide-react";
-import axios from "axios";
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import CartSkeleton from "./Skeleton";
 import api from "@/app/lib/api";
 import Link from "next/link";
+import Image from "next/image";
+
 
 const Page = () => {
   const { cart, toggleCart } = useStoreData();
@@ -188,9 +189,9 @@ const Page = () => {
                     <div className="lg:hidden space-y-4">
                       {/* Product Info */}
                       <div className="flex gap-3 sm:gap-4">
-                        <img
+                        <Image
                           src={item?.images[0]?.src || "image1.jpg"}
-                          alt={item?.name}
+                          alt={item?.name} width={80} height={80}
                           className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
@@ -237,9 +238,9 @@ const Page = () => {
                     <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
                       {/* Product Info */}
                       <div className="col-span-5 flex gap-4">
-                        <img
+                        <Image
                           src={item?.images[0]?.src || "image1.jpg"}
-                          alt={item?.name}
+                          alt={item?.name} width={96} height={96}
                           className="w-24 h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">

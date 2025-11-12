@@ -1,36 +1,37 @@
 'use client'
 import React from 'react'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import api from '../lib/api';
 import PriceSlidebar from "@/app/.component/PriceSlidebar";
 import useStoreData from '../lib/useStoreData';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const ItemsSection = ({ isOpen, onClose }) => {
+const ItemsSection = ({  onClose }) => {
   const [activeFilters, setActiveFilters] = useState(true);
   const [category, setCategory] = useState(true);
   const [price, setPrice] = useState(true);
   const [tag, setTags] = useState(true);
   const [apiCategories, setApiCategories] = useState([]);
   const [apiTags, setApiTags] = useState([]);
-  const { minPrice, maxPrice, showProduct, select, filter, setFilter, setMinPrice, setMaxPrice, minVal, maxVal, setMinVal, setMaxVal } = useStoreData();
+  const { minPrice, maxPrice, showProduct, select, filter,setSelect ,setFilter, setMinPrice, setMaxPrice, minVal, maxVal, setMinVal, setMaxVal,setShowProduct } = useStoreData();
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [categoryLoading, setCategoryLoading] = useState(true);
   const [tagLoading, setTagLoading] = useState(true);
   const [appliedFilters, setAppliedFilters] = useState([]);
+  const [apiPricesFetched, setApiPricesFetched] = useState(false);
+  const isInitialMount = useRef(true);
 
-  const defaultValues = {
-    minPrice: minVal,
-    maxPrice: maxVal,
+  // Static default values - never changes
+  const defaultValues = useRef({
     filter: null,
     showProduct: "12",
     select: "date,desc",
-  };
+  });
 
-  // Fetch min/max prices from API and set defaults
+  // Fetch min/max prices from API and set defaults ONCE
   useEffect(() => {
     const fetchPriceRange = async () => {
       try {
@@ -40,47 +41,28 @@ const ItemsSection = ({ isOpen, onClose }) => {
           const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
           const min = Math.floor(Math.min(...prices));
           const max = Math.ceil(Math.max(...prices));
+          
           setMinVal(min);
           setMaxVal(max);
-          setMinPrice(min);
-          setMaxPrice(max);
+          
+          // Only set min/max price if NOT coming from URL
+          const urlMinPrice = searchParams.get("min-price");
+          const urlMaxPrice = searchParams.get("max-price");
+          
+          if (!urlMinPrice) setMinPrice(min);
+          if (!urlMaxPrice) setMaxPrice(max);
+          
+          setApiPricesFetched(true);
         }
       } catch (e) {
         console.log("Error fetching price range:", e.message);
+        setApiPricesFetched(true);
       }
     };
     fetchPriceRange();
   }, []);
 
-  // Track applied filters
-  useEffect(() => {
-    const filters = [];
-    
-    if (filter && filter !== defaultValues.filter) {
-      const categoryName = apiCategories.find(cat => cat.id === filter)?.name || `Category ${filter}`;
-      filters.push({ type: 'category', value: filter, label: categoryName });
-    }
-    
-    if (minPrice !== defaultValues.minPrice) {
-      filters.push({ type: 'minPrice', value: minPrice, label: `Min: Rs ${minPrice}` });
-    }
-    
-    if (maxPrice !== defaultValues.maxPrice) {
-      filters.push({ type: 'maxPrice', value: maxPrice, label: `Max: Rs ${maxPrice}` });
-    }
-    
-    if (showProduct !== defaultValues.showProduct) {
-      filters.push({ type: 'showProduct', value: showProduct, label: `Show ${showProduct}` });
-    }
-    
-    if (select !== defaultValues.select) {
-      const selectLabel = select === "popularity,desc" ? "Popularity" : select === "rating,desc" ? "Rating" : select === "price,desc" ? "Price: High to Low" : select === "price,asc" ? "Price: Low to High" : "Default";
-      filters.push({ type: 'select', value: select, label: selectLabel });
-    }
-    
-    setAppliedFilters(filters);
-  }, [filter, minPrice, maxPrice, showProduct, select, apiCategories]);
-
+  // Sync Zustand with URL params on mount - ONLY ONCE
   useEffect(() => {
     const productCata = searchParams.get("product-cata");
     const min_price = searchParams.get("min-price");
@@ -96,25 +78,66 @@ const ItemsSection = ({ isOpen, onClose }) => {
     if (orderby && order) useStoreData.getState().setSelect(`${orderby},${order}`);
   }, []);
 
-
-  // Update URL with filters
+  // Track applied filters
   useEffect(() => {
-    const params = new URLSearchParams();
+    if (!apiPricesFetched) return;
     
-    if (filter && filter !== defaultValues.filter) params.append("product-cata", filter);
-    if (minPrice !== defaultValues.minPrice) params.append("min-price", minPrice);
-    if (maxPrice !== defaultValues.maxPrice) params.append("max-price", maxPrice);
-    if (showProduct !== defaultValues.showProduct) params.append("per_page", showProduct);
-    if (select !== defaultValues.select) {
-      const [orderby, order] = select.split(",");
-      params.append("orderby", orderby);
-      if (order) params.append("order", order);
+    const filters = [];
+    
+    if (filter && filter !== defaultValues.current.filter) {
+      const categoryName = apiCategories.find(cat => cat.id === filter)?.name || `Category ${filter}`;
+      filters.push({ type: 'category', value: filter, label: categoryName });
+    }
+    
+    if (minPrice !== minVal) {
+      filters.push({ type: 'minPrice', value: minPrice, label: `Min: Rs ${minPrice}` });
+    }
+    
+    if (maxPrice !== maxVal) {
+      filters.push({ type: 'maxPrice', value: maxPrice, label: `Max: Rs ${maxPrice}` });
+    }
+    
+    if (showProduct !== defaultValues.current.showProduct) {
+      filters.push({ type: 'showProduct', value: showProduct, label: `Show ${showProduct}` });
+    }
+    
+    if (select !== defaultValues.current.select) {
+      const selectLabel = select === "popularity,desc" ? "Popularity" : select === "rating,desc" ? "Rating" : select === "price,desc" ? "Price: High to Low" : select === "price,asc" ? "Price: Low to High" : "Default";
+      filters.push({ type: 'select', value: select, label: selectLabel });
+    }
+    
+    setAppliedFilters(filters);
+  }, [filter, minPrice, maxPrice, showProduct, select, apiCategories, minVal, maxVal, apiPricesFetched]);
+
+  // Update URL with filters - only after API prices are fetched
+  useEffect(() => {
+    if (!apiPricesFetched) return;
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
 
-    const query = params.toString();
-    const url = query ? `/shop?${query}` : "/shop";
-    router.replace(url);
-  }, [minPrice, maxPrice, filter, showProduct, select]);
+    const currentParams = new URLSearchParams(searchParams.toString());
+    const newParams = new URLSearchParams();
+    
+    if (filter && filter !== defaultValues.current.filter) newParams.append("product-cata", filter);
+    if (minPrice !== minVal) newParams.append("min-price", minPrice);
+    if (maxPrice !== maxVal) newParams.append("max-price", maxPrice);
+    if (showProduct !== defaultValues.current.showProduct) newParams.append("per_page", showProduct);
+    if (select !== defaultValues.current.select) {
+      const [orderby, order] = select.split(",");
+      newParams.append("orderby", orderby);
+      if (order) newParams.append("order", order);
+    }
+
+    const currentQuery = currentParams.toString();
+    const newQuery = newParams.toString();
+    
+    if (currentQuery !== newQuery) {
+      const url = newQuery ? `/shop?${newQuery}` : "/shop";
+      router.replace(url);
+    }
+  }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal]);
 
   const getApiCategories = async () => {
     try {
@@ -150,14 +173,16 @@ const ItemsSection = ({ isOpen, onClose }) => {
         setFilter(null);
         break;
       case 'minPrice':
-        setMinPrice(defaultValues.minPrice);
+        setMinPrice(minVal);
         break;
       case 'maxPrice':
-        setMaxPrice(defaultValues.maxPrice);
+        setMaxPrice(maxVal);
         break;
       case 'showProduct':
+        setShowProduct('12')
         break;
       case 'select':
+        setSelect('date,desc')
         break;
     }
   };
@@ -165,8 +190,8 @@ const ItemsSection = ({ isOpen, onClose }) => {
   const resetAllFilters = () => {
     if (onClose) onClose();
     setFilter(null);
-    setMinPrice(defaultValues.minPrice);
-    setMaxPrice(defaultValues.maxPrice);
+    setMinPrice(minVal);
+    setMaxPrice(maxVal);
   };
 
   const handleCategoryClick = (categoryId) => {
@@ -181,7 +206,6 @@ const ItemsSection = ({ isOpen, onClose }) => {
 
   return (
     <div className='grid [&>*]:border-gray-100'>
-      {/* Active Filters Section */}
       {appliedFilters.length > 0 && (
         <>
           <div className='grid my-1 py-2 border-b-2 cursor-pointer' onClick={() => setActiveFilters(!activeFilters)}>
@@ -207,7 +231,6 @@ const ItemsSection = ({ isOpen, onClose }) => {
         </>
       )}
 
-      {/* Category */}
       <div className='grid my-1 py-2 border-b-2 cursor-pointer' onClick={() => setCategory(!category)}>
         <div className='flex items-center justify-between'>
           <p className='font-semibold text-[20px] text-gray-900'>Category</p>
@@ -244,7 +267,6 @@ const ItemsSection = ({ isOpen, onClose }) => {
         )}
       </ul>
 
-      {/* Price */}
       <div className='grid my-1 py-2 border-b-2 cursor-pointer' onClick={() => setPrice(!price)}>
         <div className='flex items-center justify-between'>
           <p className='font-semibold text-[20px] text-gray-900'>Price</p>
@@ -255,14 +277,13 @@ const ItemsSection = ({ isOpen, onClose }) => {
         <PriceSlidebar />
       </div>
 
-      {/* Tag */}
       <div className='grid my-1 py-2 border-b-2 cursor-pointer' onClick={() => setTags(!tag)}>
         <div className='flex items-center justify-between'>
           <p className='font-semibold text-[20px] text-gray-900'>Tag</p>
           <ChevronDown className={`text-[14px] text-gray-400 ${tag ? "rotate-0" : "rotate-180"} transition-all duration-150`} />
         </div>
       </div>
-      <div className={`[&>*]:hover:text-black transition-all duration-200 ease-in-out ${tag ? "max-h-96 opacity-100" : "h-0 opacity-0"}`}>
+      <div className={`[&>*]:hover:text-black transition-all duration-400 ease-in-out ${tag ? "max-h-[600px] opacity-100" : "h-0 opacity-0"}`}>
         {tagLoading ? (
           <div className="grid [&>*]:border-gray-100 animate-pulse">
             <div className="flex flex-wrap gap-2">

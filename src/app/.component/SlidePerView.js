@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function SlidePerView() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -10,10 +11,10 @@ export default function SlidePerView() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const slides = [
-    { id: 1, title: 'Inverters', image: '/inverter.png' },
-    { id: 2, title: 'Solar Panels', image: '/solarpanels.jpg' },
-    { id: 3, title: 'Lithium Batteries', image: '/solar-batteries.webp' },
-    { id: 4, title: 'VP Protectors', image: '/vaprotectors.webp' },
+    { id: 1, title: 'Inverters', image: '/inverter.png' ,link:"/product-category/solar-inverter" },
+    { id: 2, title: 'Solar Panels', image: '/solarpanels.jpg',link:"/product-category/solar-panels" },
+    { id: 3, title: 'Lithium Batteries', image: '/solar-batteries.webp', link:"/product-category/battery" },
+    { id: 4, title: 'VP Protectors', image: '/vaprotectors.webp',link:"/product-category/va-protectors", },
   ];
 
   const extendedSlides = [...slides, ...slides, ...slides];
@@ -86,10 +87,10 @@ export default function SlidePerView() {
             <div className={`flex ${isTransitioning ? 'transition-transform duration-500 ease-out' : ''}`} style={{ transform: `translateX(-${currentIndex * (100 / slidesPerView)}%)` }} onTransitionEnd={handleTransitionEnd}>
               {extendedSlides.map((slide, index) => (
                 <div key={`${slide.id}-${index}`} className="flex-shrink-0 px-2 sm:px-3" style={{ width: `${100 / slidesPerView}%` }}>
-                  <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 group border border-gray-200">
-                    <div className="relative h-48 sm:h-56  flex items-center justify-center overflow-hidden">
+                  <div className="bg-white rounded-xl overflow-hidden shadow-lg  transition-all duration-300 hover:scale-100 group border border-gray-200">
+                    <Link href={slide.link} className="relative h-48 sm:h-56  flex items-center justify-center overflow-hidden">
                       <Image src={slide.image} alt={slide.title} width={300} height={300} className="object-contain w-full h-full p-4 group-hover:scale-110 transition-transform duration-300" unoptimized />
-                    </div>
+                    </Link>
 
                     <div className="p-4 sm:p-6">
                       <h3 className="text-lg text-center sm:text-xl font-bold text-gray-800 mb-2">{slide.title}</h3>

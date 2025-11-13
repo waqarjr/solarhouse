@@ -2,8 +2,9 @@
 import {  Heart, Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import api from '../lib/api';
+import useStoreData from "@/app/lib/useStoreData";
+import Swal from 'sweetalert2';
 
 // Skeleton Component
 const ProductSkeleton = () => (
@@ -17,10 +18,24 @@ const ProductSkeleton = () => (
   </div>
 );
 
+const alertSwal = ()=>{
+          const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            timer: 1500,
+            timerProgressBar: true,
+            showConfirmButton: false,
+          });
+          Toast.fire({
+            icon: "success",
+            title: "Product added to cart successfully",
+          });
+          lastAction.current = null;
+}
 const NewArival = () => {
-  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+    const { toggleCart } = useStoreData();
 
   const getData = async () => {
     try {
@@ -40,6 +55,32 @@ const NewArival = () => {
     }
   }
 
+
+const cartData = (id) => {
+    if (localStorage.getItem("name")) {
+      const existingData = JSON.parse(localStorage.getItem("name"));
+      const filter = existingData.filter((v) => v.id === id);
+      if (filter.length) {
+        filter[0].qty = filter[0]["qty"] + 1;
+        localStorage.setItem("name", JSON.stringify(existingData));
+        toggleCart();
+        alertSwal();
+      } else {
+        const updatedData = [...existingData, { id: id, qty: 1 }];
+        localStorage.setItem("name", JSON.stringify(updatedData));
+        toggleCart();
+        alertSwal();
+      }
+    } else {
+      const existingData = [];
+      const updatedData = [...existingData, { id: id, qty: 1 }];
+      localStorage.setItem("name", JSON.stringify(updatedData));
+      toggleCart();
+      alertSwal();
+    }
+  };
+
+
   useEffect(() => {
     getData()
   }, [])
@@ -55,25 +96,18 @@ const NewArival = () => {
         {/* Responsive Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 my-6">
           {loading ? (
-            // Show skeletons while loading
             new Array(8).fill(null).map((_, id) => (
               <ProductSkeleton key={id} />
             ))
           ) : (
             // Show actual products
             products.map((product) => (
-              <div 
-                key={product.id} 
-                className="h-auto w-full group shadow-md relative overflow-hidden rounded-md cursor-pointer transition-all duration-300"
-              >
+              <div key={product.id} 
+                className="h-auto w-full group shadow-md relative overflow-hidden rounded-md cursor-pointer transition-all duration-300">
                 <div className="relative w-full h-[200px] sm:h-[220px] lg:h-[256px] overflow-hidden">
-                  <Image unoptimized
-                    src={product?.images[0]?.src || "/image1.jpg"}
+                  <Image unoptimized src={product?.images[0]?.src || "/image1.jpg"}
                     alt={product?.images[0]?.alt || product?.name || "product image"}
-                    priority
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                    priority fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
 
                   {/* Hover Icons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500">
@@ -86,7 +120,7 @@ const NewArival = () => {
                   </div>
 
                   {/* Cart Button */}
-                  <div className="absolute bg-blue-600 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                  <div onClick={() => cartData(product.id)} className="absolute bg-blue-600 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                     <button className="bg-black text-white p-2 rounded-full shadow cursor-pointer">
                       <ShoppingCart size={20} />
                     </button>

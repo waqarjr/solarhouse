@@ -194,6 +194,7 @@ const ItemsSection = ({  onClose ,url}) => {
     setMinPrice(minVal);
     setMaxPrice(maxVal);
     setSelect('date,desc');
+     setShowProduct('12');
   };
 
   const handleCategoryClick = (categoryId) => {

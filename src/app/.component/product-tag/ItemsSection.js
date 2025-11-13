@@ -2,12 +2,13 @@
 import React from 'react'
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, X } from 'lucide-react';
-import api from '../lib/api';
+import api from '../../lib/api';
 import PriceSlidebar from "@/app/.component/PriceSlidebar";
-import useStoreData from '../lib/useStoreData';
+import useStoreData from "@/app/lib/useStoreData";
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const ItemsSection = ({  onClose }) => {
+const ItemsSection = ({  onClose ,url}) => {
+    const newUrl = url;
   const [activeFilters, setActiveFilters] = useState(true);
   const [category, setCategory] = useState(true);
   const [price, setPrice] = useState(true);
@@ -31,35 +32,38 @@ const ItemsSection = ({  onClose }) => {
     select: "date,desc",
   });
 
-  // Fetch min/max prices from API and set defaults ONCE
   useEffect(() => {
     const fetchPriceRange = async () => {
-      try {
-        const response = await api.get("/products?per_page=100&orderby=price&order=asc");
-        const products = response.data;
-        if (products.length > 0) {
-          const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
-          const min = Math.floor(Math.min(...prices));
-          const max = Math.ceil(Math.max(...prices));
-          
-          setMinVal(min);
-          setMaxVal(max);
-          
-          // Only set min/max price if NOT coming from URL
-          const urlMinPrice = searchParams.get("min-price");
-          const urlMaxPrice = searchParams.get("max-price");
-          
-          if (!urlMinPrice) setMinPrice(min);
-          if (!urlMaxPrice) setMaxPrice(max);
-          
-          setApiPricesFetched(true);
-        }
-      } catch (e) {
-        console.log("Error fetching price range:", e.message);
-        setApiPricesFetched(true);
-      }
-    };
-    fetchPriceRange();
+  try {
+    const tagResponse = await api.get(`products/tags?slug=${newUrl}`);
+    const tagId = tagResponse.data?.[0]?.id; 
+
+    const response = await api.get(`products?tag=${tagId}&per_page=100&orderby=price&order=asc`);
+    const products = response.data;
+
+    if (products.length > 0) {
+      const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
+      const min = Math.floor(Math.min(...prices));
+      const max = Math.ceil(Math.max(...prices));
+
+      setMinVal(min);
+      setMaxVal(max);
+
+      const urlMinPrice = searchParams.get("min-price");
+      const urlMaxPrice = searchParams.get("max-price");
+
+      if (!urlMinPrice) setMinPrice(min);
+      if (!urlMaxPrice) setMaxPrice(max);
+
+      setApiPricesFetched(true);
+    }
+  } catch (e) {
+    console.log("Error fetching price range:", e.message);
+    setApiPricesFetched(true);
+  }
+};
+
+fetchPriceRange();
   }, []);
 
   // Sync Zustand with URL params on mount - ONLY ONCE
@@ -134,14 +138,14 @@ const ItemsSection = ({  onClose }) => {
     const newQuery = newParams.toString();
     
     if (currentQuery !== newQuery) {
-      const url = newQuery ? `/shop?${newQuery}` : "/shop";
+      const url = newQuery ? `/product-tag/${newUrl}?${newQuery}` : `/product-tag/${newUrl}`;
       router.replace(url);
     }
   }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal]);
 
   const getApiCategories = async () => {
     try {
-      const response = await api.get("/products/categories?per_page=100");
+      const response = await api.get("/products/categories?parent=0&per_page=100");
       setApiCategories(response.data);
     } catch (e) {
       console.log(e.message);
@@ -179,10 +183,10 @@ const ItemsSection = ({  onClose }) => {
         setMaxPrice(maxVal);
         break;
       case 'showProduct':
-        setShowProduct('12')
+        setShowProduct('12');
         break;
       case 'select':
-        setSelect('date,desc')
+        setSelect('date,desc');
         break;
     }
   };
@@ -192,8 +196,8 @@ const ItemsSection = ({  onClose }) => {
     setFilter(null);
     setMinPrice(minVal);
     setMaxPrice(maxVal);
-    setShowProduct('12');
-    setSelect('date,desc')
+    setSelect('date,desc');
+     setShowProduct('12');
   };
 
   const handleCategoryClick = (categoryId) => {

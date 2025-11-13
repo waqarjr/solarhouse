@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from "next/navigation";
 import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
+import Swal from 'sweetalert2';
 
 const Products = () => {
   const { showProduct, setShowProduct, select, setSelect, minVal, maxVal } = useStoreData();
@@ -18,6 +19,22 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [apiPricesFetched, setApiPricesFetched] = useState(false);
 
+
+const alertSwal = ()=>{
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+    Toast.fire({
+      icon: "success",
+      title: "Product added to cart successfully",
+    });
+    lastAction.current = null;
+}
+
   const cartData = (id) => {
     if (localStorage.getItem("name")) {
       const existingData = JSON.parse(localStorage.getItem("name"));
@@ -25,16 +42,24 @@ const Products = () => {
       if (filter.length) {
         filter[0].qty = filter[0]["qty"] + 1;
         localStorage.setItem("name", JSON.stringify(existingData));
+        toggleCart();
+        alertSwal();
       } else {
         const updatedData = [...existingData, { id: id, qty: 1 }];
         localStorage.setItem("name", JSON.stringify(updatedData));
+        toggleCart();
+        alertSwal();
       }
     } else {
       const existingData = [];
       const updatedData = [...existingData, { id: id, qty: 1 }];
       localStorage.setItem("name", JSON.stringify(updatedData));
+      toggleCart();
+      alertSwal();
     }
   };
+
+
 
   // Wait for minVal/maxVal to be set from API
   useEffect(() => {

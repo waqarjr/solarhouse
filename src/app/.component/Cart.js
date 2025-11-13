@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { X, ShoppingBag } from "lucide-react";
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from "next/navigation";
@@ -13,24 +13,29 @@ const Cart = () => {
   const [value, setValue] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const router = useRouter();
+  const isInitialMount = useRef(true);
+  const lastAction = useRef(null);
 
-  const getData = async (string) => {
+  const getData = async (string, showAlert = false) => {
     if (!string) return;
     try {
       const response = await api.get(`/products?include=${string}`);
       setData(response.data);
 
-      const Toast = Swal.mixin({
-        toast: true,
-        position: "top-end",
-        timer: 1500,
-        timerProgressBar: true,
-        showConfirmButton: false,
-      });
-      Toast.fire({
-        icon: "success",
-        title: "Product added to cart successfully",
-      });
+      if (showAlert && lastAction.current === 'add') {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          timer: 1500,
+          timerProgressBar: true,
+          showConfirmButton: false,
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Product added to cart successfully",
+        });
+        lastAction.current = null;
+      }
     } catch (e) {
       console.log(e.message);
     }
@@ -48,12 +53,20 @@ const Cart = () => {
 
     if (idData.length === 0) {
       setData([]);
-      setOpenCart(false); // ✅ close when cart empty
+      setOpenCart(false);
       return;
     }
 
     const string = idData.join(",");
-    getData(string);
+    
+    // On initial mount, don't show alert
+    if (isInitialMount.current) {
+      getData(string, false);
+      isInitialMount.current = false;
+    } else {
+      // On subsequent changes, show alert only if it was an add action
+      getData(string, true);
+    }
   }, [cart]);
 
   useEffect(() => {
@@ -61,7 +74,7 @@ const Cart = () => {
     if (!storageData || data.length === 0) {
       setValue([]);
       setTotalPrice(0);
-      setOpenCart(false); // ✅ close when cart becomes empty
+      setOpenCart(false);
       return;
     }
 
@@ -87,13 +100,15 @@ const Cart = () => {
     const jsonObject = JSON.parse(storageData);
     const fil = jsonObject.filter((val) => val.id !== id);
     localStorage.setItem("name", JSON.stringify(fil));
+    
+    lastAction.current = 'remove';
     toggleCart();
 
     if (fil.length === 0) {
       setData([]);
       setValue([]);
       setTotalPrice(0);
-      setOpenCart(false); //  auto close when last item removed
+      setOpenCart(false);
     }
 
     const Toast = Swal.mixin({
@@ -109,13 +124,23 @@ const Cart = () => {
     });
   };
 
+  // Track when products are added (call this from your add to cart functions)
+  useEffect(() => {
+    // Listen for storage events from other components
+    const handleStorageChange = (e) => {
+      if (e.key === 'cart-action') {
+        lastAction.current = e.newValue;
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   if (data.length === 0) {
     return (
       <div className="relative">
-        <button
-          disabled
-          className="flex items-center justify-center gap-3 text-gray-400 cursor-not-allowed transition-colors"
-        >
+        <button disabled className="flex items-center justify-center gap-3 text-gray-400 cursor-not-allowed transition-colors">
           <ShoppingBag />
           <span className="absolute -top-1 -right-1 bg-gray-300 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
             0
@@ -127,10 +152,7 @@ const Cart = () => {
 
   return (
     <div className="relative">
-      <button
-        className="flex items-center justify-center gap-3 hover:text-blue-600 cursor-pointer transition-all"
-        onClick={() => setOpenCart(!openCart)}
-      >
+      <button className="flex items-center justify-center gap-3 hover:text-blue-600 cursor-pointer transition-all" onClick={() => setOpenCart(!openCart)}>
         <ShoppingBag />
         <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center">
           {data.length}
@@ -139,11 +161,9 @@ const Cart = () => {
 
       {openCart && (
         <>
-          <div className="fixed inset-0 bg-gray-800/40 z-40 backdrop-blur-sm animate-fadeIn"
-            onClick={() => setOpenCart(false)} />
+          <div className="fixed inset-0 bg-gray-800/40 z-40 backdrop-blur-sm animate-fadeIn" onClick={() => setOpenCart(false)} />
 
-          <div className={`fixed cursor-default top-0 right-0 h-full w-[500px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${ openCart ? 'translate-x-0' : 'translate-x-full'}`}>
-
+          <div className={`fixed cursor-default top-0 right-0 h-full w-[500px] bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out ${openCart ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="p-5 flex flex-col h-full">
               {/* Header */}
               <div className="flex items-center justify-between border-b pb-4">
@@ -161,7 +181,7 @@ const Cart = () => {
                 {value.map((item, id) => (
                   <div key={id} className="flex gap-3 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-all group">
                     <div className="w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
-                      <img src={item?.images?.[0]?.src || "placeholder.jpg"} alt={item.name} className="w-full h-full object-cover"/>
+                      <img src={item?.images?.[0]?.src || "placeholder.jpg"} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex flex-col justify-between flex-1">
                       <h4 className="font-medium text-gray-800 text-sm leading-tight">
@@ -190,18 +210,10 @@ const Cart = () => {
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() => {
-                      setOpenCart(false);
-                      router.push("/cart");
-                    }}
-                    className="w-full hover:bg-blue-600 bg-white text-gray-700 hover:text-white border-2 border-gray-300 hover:border-blue-600 py-2 rounded-xl font-semibold duration-300"
-                  >
+                  <button onClick={() => { setOpenCart(false); router.push("/cart"); }} className="w-full hover:bg-blue-600 bg-white text-gray-700 hover:text-white border-2 border-gray-300 hover:border-blue-600 py-2 rounded-xl font-semibold duration-300">
                     View Cart
                   </button>
-                  <button onClick={() => { setOpenCart(false);
-                   router.push("/checkout"); }}
-                    className="w-full bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300">
+                  <button onClick={() => { setOpenCart(false); router.push("/checkout"); }} className="w-full bg-blue-600 text-white py-2 rounded-xl font-semibold hover:bg-blue-700 transition-all duration-300">
                     Checkout
                   </button>
                 </div>

@@ -15,14 +15,6 @@ export const Carousel = () => {
       id: 2,
       image: '/solar-invertor-banner.jpg'
     },
-    {
-      id: 3,
-      image: '/banner-1.jpg'
-    },
-    {
-      id: 4,
-      image: '/solar-invertor-banner.jpg'
-    }
   ];
 
   const nextSlide = useCallback(() => {

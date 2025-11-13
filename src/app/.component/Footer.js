@@ -72,7 +72,7 @@ const Footer = () => {
 
                     {/* Newsletter Section */}
                     <div className="space-y-4">
-                        <h3 className="text-xl font-bold mb-4">Let's get in touch</h3>
+                        <h3 className="text-xl font-bold mb-4">Let&apos;s get in touch</h3>
                         <p className="text-gray-300 text-sm mb-4">
                             Sign up for our newsletter and receive 10% off your
                         </p>

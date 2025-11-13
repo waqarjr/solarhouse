@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, ShoppingCart, CreditCard, Truck, RotateCcw, Award, Copyright, AlertCircle, Scale } from 'lucide-react';
+import { FileText, ShoppingCart, CreditCard, Truck, RotateCcw, Award, Copyright, AlertCircle, Scale, Link } from 'lucide-react';
 
 export default function TermsConditions() {
   const sections = [
@@ -110,7 +110,7 @@ export default function TermsConditions() {
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-5xl mx-auto">
           <nav className="flex text-sm text-gray-500">
-            <a href="/" className="hover:text-slate-700 transition-colors">Home</a>
+            <Link href="/" className="hover:text-slate-700 transition-colors">Home</Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Terms & Conditions</span>
           </nav>
@@ -226,7 +226,7 @@ export default function TermsConditions() {
             </div>
             <h3 className="text-2xl font-bold mb-3">Questions About These Terms?</h3>
             <p className="text-slate-300 mb-6 max-w-2xl mx-auto">
-              If you have any questions or concerns about our Terms & Conditions, please don't hesitate to contact us. We're here to help.
+              If you have any questions or concerns about our Terms & Conditions, please don&apos;t hesitate to contact us. We&apos;re here to help.
             </p>
             <a
               href="mailto:info@solarstore.pk"

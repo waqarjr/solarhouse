@@ -27,18 +27,18 @@ const ProductPage = () => {
         ],
     }
 
-    const getApiProducts = async () => {
-        try {
-            const response = await api.get(`/products?slug=${productid}`)
-            setApiProducts(response.data)
-        } catch (e) {
-            console.log(e.message)
-        } finally {
-            setLoading(false)
-        }
-    }
-
+    
     useEffect(() => {
+        const getApiProducts = async () => {
+            try {
+                const response = await api.get(`/products?slug=${productid}`)
+                setApiProducts(response.data)
+            } catch (e) {
+                console.log(e.message)
+            } finally {
+                setLoading(false)
+            }
+        }
         getApiProducts()
     }, [])
 

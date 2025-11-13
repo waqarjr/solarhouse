@@ -4,7 +4,7 @@ import { Home, ShoppingCart, Users, BarChart3, Settings,Menu, X } from 'lucide-r
 import Link from "next/link";
 import "../globals.css";
 
-export default  function layout({children}) {
+export default  function Layout({children}) {
       const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 

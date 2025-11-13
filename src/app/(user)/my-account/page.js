@@ -6,7 +6,7 @@ import Swal from 'sweetalert2'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const {user,clearUser} = useStoreData();
  const logout = async ()=>{
@@ -66,4 +66,4 @@ const page = () => {
 )
 }
 
-export default page
+export default Page

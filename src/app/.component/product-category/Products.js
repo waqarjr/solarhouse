@@ -68,7 +68,7 @@ const Products = ({url}) => {
     };
 
     fetchFilteredProducts();
-  }, [searchParams, apiPricesFetched, minVal, maxVal]);
+  }, [searchParams, apiPricesFetched, minVal, maxVal,newUrl]);
 
   if (loading || !apiPricesFetched) return <ProductGridSkeleton />;
 

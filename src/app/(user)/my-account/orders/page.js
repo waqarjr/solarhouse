@@ -8,32 +8,31 @@ import axios from 'axios';
 import Skeleton from './Skeleton';
 
 
-const page = () => {
+const Page = () => {
 
-  const {user} = useStoreData();
   const [data , setData] = useState([])
   const [noData, setNoData] = useState(false);
   const [loading , setLoading] = useState(true);
-
+  const {user} = useStoreData();
   
-  const getData = async()=>{
-  try {
-  const response  =  await axios.post('/api/orders',{id:user.id});
   
-  if (response.data.valid)
-    {
-      setLoading(true);
-      setData(response.data.message)
-    } 
-    else setNoData(true);
-  } catch (error) {
-    console.log(error.message);
-  }finally {
-    setLoading(false);
-  }
-
-}
   useEffect(()=>{
+    const getData = async()=>{
+    try {
+    const response  =  await axios.post('/api/orders',{id:user.id});
+    
+    if (response.data.valid)
+      {
+        setLoading(true);
+        setData(response.data.message)
+      } 
+      else setNoData(true);
+    } catch (error) {
+      console.log(error.message);
+    }finally {
+      setLoading(false);
+    }
+  }
     getData()
   },[])
 
@@ -159,4 +158,4 @@ if(loading) return <Skeleton/>
 
 }
 
-export default page 
+export default Page;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Package, Truck, MapPin, Clock, CheckCircle, RotateCcw, Shield, Mail, Phone, Info } from 'lucide-react';
+import Link from 'next/link';
 
 export default function ShippingReturnPolicy() {
   const shippingFeatures = [
@@ -73,7 +74,7 @@ export default function ShippingReturnPolicy() {
             Shipping & Return Policy
           </h1>
           <p className="text-lg sm:text-xl text-purple-100 text-center max-w-2xl mx-auto">
-            We're committed to delivering your solar products safely and ensuring your complete satisfaction.
+            We&apos;re committed to delivering your solar products safely and ensuring your complete satisfaction.
           </p>
         </div>
       </div>
@@ -82,7 +83,7 @@ export default function ShippingReturnPolicy() {
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-5xl mx-auto">
           <nav className="flex text-sm text-gray-500">
-            <a href="/" className="hover:text-indigo-600 transition-colors">Home</a>
+            <Link href="/" className="hover:text-indigo-600 transition-colors">Home</Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Shipping & Return Policy</span>
           </nav>
@@ -100,7 +101,7 @@ export default function ShippingReturnPolicy() {
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Shipping Information</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              We're committed to delivering your solar products safely and on time.
+              We&apos;re committed to delivering your solar products safely and on time.
             </p>
           </div>
 
@@ -133,7 +134,7 @@ export default function ShippingReturnPolicy() {
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Return Policy</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Your satisfaction is our priority. If you're not completely satisfied with your purchase, we're here to help.
+              Your satisfaction is our priority. If you&apos;re not completely satisfied with your purchase, we&apos;re here to help.
             </p>
           </div>
 

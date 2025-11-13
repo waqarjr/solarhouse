@@ -110,21 +110,21 @@ const handRegis = useFormik({
   }
 })
 
-const fetchData = async()=>{
-  try{
-  setLoading(true);
-  const response  = await axios.post('/api/auth/verify');
-  if(response.data.valid) setUser(response.data.message);
-    else clearUser();
-  } catch {
-    clearUser();
-  }finally{
-    setLoading(false);
-  }
-
-}
 
 useEffect(()=>{
+  const fetchData = async()=>{
+    try{
+    setLoading(true);
+    const response  = await axios.post('/api/auth/verify');
+    if(response.data.valid) setUser(response.data.message);
+      else clearUser();
+    } catch {
+      clearUser();
+    }finally{
+      setLoading(false);
+    }
+  
+  }
   fetchData();     
 },[])
 

@@ -69,6 +69,8 @@ const handRegis = useFormik({
 
 
 
+
+useEffect(()=>{
   const fetchData = async()=>{
     try{
       setLoading(true);
@@ -80,11 +82,8 @@ const handRegis = useFormik({
     }finally{
       setLoading(false);
     }
-
   }
-
-  useEffect(()=>{
-    fetchData();     
+  fetchData();     
   },[])
 
 if(loading) return (<>

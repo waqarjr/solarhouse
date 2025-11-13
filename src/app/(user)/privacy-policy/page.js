@@ -1,5 +1,6 @@
 import React from 'react';
 import { Shield, Lock, Cookie, Users, Database, FileText, Globe, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function PrivacyPolicy() {
   const sections = [
@@ -71,7 +72,7 @@ export default function PrivacyPolicy() {
       <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
         <div className="max-w-4xl mx-auto">
           <nav className="flex text-sm text-gray-500">
-            <a href="/" className="hover:text-blue-600 transition-colors">Home</a>
+            <Link href="/" className="hover:text-blue-600 transition-colors">Home</Link>
             <span className="mx-2">/</span>
             <span className="text-gray-900 font-medium">Privacy Policy</span>
           </nav>
@@ -146,7 +147,7 @@ export default function PrivacyPolicy() {
                 Questions about our Privacy Policy?
               </h3>
               <p className="text-gray-600">
-                If you have any questions about this Privacy Policy or how we handle your data, please don't hesitate to contact us.
+                If you have any questions about this Privacy Policy or how we handle your data, please don&apos;t hesitate to contact us.
               </p>
             </div>
           </div>

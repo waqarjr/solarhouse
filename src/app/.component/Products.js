@@ -2,7 +2,7 @@
 import { ChevronDown, Heart, Search, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
 import api from '../lib/api';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, } from 'react';
 import { useRouter, useSearchParams } from "next/navigation";
 import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";

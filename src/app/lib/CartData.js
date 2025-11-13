@@ -1,6 +1,8 @@
 'use client'
 import axios from "axios";
 import useStoreData from "./useStoreData";
+import api from "./api";
+
 import { useState, useEffect } from "react";
 
 const CartData = ()=>{
@@ -11,15 +13,7 @@ const CartData = ()=>{
 
     const getData = async (string)=>{
     try{
-        const response = await axios.get(
-        `https://solarhouse.pk/wp-json/wc/v3/products?include=${string}`,
-        {
-          auth: {
-            username: "ck_99f7a958b70ea5326b2620d11d1ab448903842f5", 
-            password: "cs_507c77fdcf49ed4b19fd444c23649a09dabffa97" 
-          }
-        }
-      );
+        const response = await api.get(`/products?include=${string}`)
       setData(response.data);
       }catch (e){
         console.error(e.message);

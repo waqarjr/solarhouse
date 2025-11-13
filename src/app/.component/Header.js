@@ -3,9 +3,11 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { Heart, Search, ShoppingBag, User, Menu, X } from 'lucide-react'
+import { Heart, ShoppingBag,  Menu, X } from 'lucide-react'
 import Cart from "@/app/.component/Cart";
 import Account from "@/app/.component/Account";
+import SearchBox from "@/app/.component/SearchBox";
+
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const navlinks = [
@@ -68,7 +70,7 @@ const Header = () => {
                     {/* Icons */}
                     <div className=' flex items-center justify-center gap-3 [&>*]:hover:text-blue-500 [&>*]:cursor-pointer [&>*]:transition-colors'>
                         <Account/>
-                        <Search />
+                        <SearchBox />
                         <Heart />
                         <Cart />
                     </div>
@@ -84,7 +86,7 @@ const Header = () => {
                     {/* Mobile Icons & Menu Button */}
                     <div className='flex items-center gap-3'>
                         <div className='flex items-center gap-3 [&>*]:hover:text-blue-500 [&>*]:cursor-pointer [&>*]:transition-colors'>
-                            <Search className='w-5 h-5' />
+                            <SearchBox/>
                             <Heart className='w-5 h-5' />
                             <Link href="/cart" ><ShoppingBag className='w-5 h-5' /></Link>
                         </div>

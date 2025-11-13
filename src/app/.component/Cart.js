@@ -22,20 +22,6 @@ const Cart = () => {
       const response = await api.get(`/products?include=${string}`);
       setData(response.data);
 
-      if (showAlert && lastAction.current === 'add') {
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top-end",
-          timer: 1500,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-        Toast.fire({
-          icon: "success",
-          title: "Product added to cart successfully",
-        });
-        lastAction.current = null;
-      }
     } catch (e) {
       console.log(e.message);
     }
@@ -180,8 +166,8 @@ const Cart = () => {
               <div className="flex-1 overflow-y-auto py-4 space-y-3">
                 {value.map((item, id) => (
                   <div key={id} className="flex gap-3 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-all group">
-                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
-                      <img src={item?.images?.[0]?.src || "placeholder.jpg"} alt={item.name} className="w-full h-full object-cover" />
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-white shadow-sm">
+                      <Image src={item?.images?.[0]?.src || "/placeholder.jpg"} alt={item?.name || "Product image"} fill className="object-cover" sizes="80px" />
                     </div>
                     <div className="flex flex-col justify-between flex-1">
                       <h4 className="font-medium text-gray-800 text-sm leading-tight">

@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Home, ShoppingCart, Users, BarChart3, Settings,Menu, X } from 'lucide-react';
 import Link from "next/link";
 
-const slidebar = () => {
-          const [isOpen, setIsOpen] = useState(false);
+const Slidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const menuItems = [
@@ -64,4 +64,4 @@ const slidebar = () => {
   </>)
 }
 
-export default slidebar
+export default Slidebar;

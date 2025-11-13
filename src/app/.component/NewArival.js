@@ -19,19 +19,19 @@ const ProductSkeleton = () => (
 );
 
 const alertSwal = ()=>{
-          const Toast = Swal.mixin({
-            toast: true,
-            position: "top-end",
-            timer: 1500,
-            timerProgressBar: true,
-            showConfirmButton: false,
-          });
-          Toast.fire({
-            icon: "success",
-            title: "Product added to cart successfully",
-          });
-          lastAction.current = null;
+  const Toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    timer: 1500,
+    timerProgressBar: true,
+    showConfirmButton: false,
+  });
+  Toast.fire({
+    icon: "success",
+    title: "Product added to cart successfully",
+  });
 }
+
 const NewArival = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -4,6 +4,7 @@ import { Package, Truck, CreditCard, FileText, Clock, Building2 } from 'lucide-r
 import { useRouter,useParams } from 'next/navigation';
 import api from '@/app/lib/api';
 import OrderDetailsSkeleton from './OrderDetailsSkeleton';
+import Image from 'next/image';
 
 export default function OrderDetails() {
     const router  = useRouter();
@@ -12,18 +13,18 @@ export default function OrderDetails() {
     const [loading , setLoading] = useState(true);
     const [validOrder , setValidOrder] = useState(false);
 
-    const getData  = async ()=>{
-      try{
-        const response = await api.get(`/orders/${orderid}`);
-        setData(response.data)
-      }catch (error ){
-
-      } finally {
-        setLoading(false);
-      }
-    }
-
+    
     useEffect(()=>{
+      const getData  = async ()=>{
+        try{
+          const response = await api.get(`/orders/${orderid}`);
+          setData(response.data)
+        }catch (error ){
+  
+        } finally {
+          setLoading(false);
+        }
+      }
         getData()
     },[])
     console.log(data.line_items?.subtotal);
@@ -87,12 +88,8 @@ export default function OrderDetails() {
               <div className="p-6">
                 {data?.line_items?.map((item) => (
                   <div key={item.id} className="flex gap-4">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden">
-                      <img 
-                        src={item?.image?.src} 
-                        alt={item?.name}
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-slate-100 rounded-xl overflow-hidden">
+                      <Image src={item?.image?.src} alt={item?.name || "Product image"} fill className="object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">

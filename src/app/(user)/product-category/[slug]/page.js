@@ -8,7 +8,7 @@ import { SlidersHorizontal, X ,ChevronDown} from "lucide-react";
 
 
 
-const page =   ({params}) => {
+const Page =   ({params}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {slug} =  use(params);
   const newHero = `/shop/${slug}` 
@@ -45,7 +45,7 @@ const page =   ({params}) => {
     <div className="flex flex-col items-center gap-4">
 
       <h1 className="text-3xl font-bold text-primary">No Products Found</h1>
-      <p className="text-gray-600 text-lg">Sorry, we couldn't find any products matching your selection.</p>
+      <p className="text-gray-600 text-lg">Sorry, we couldn&apos;t find any products matching your selection.</p>
 
       <a href="/shop" className="mt-6 inline-block bg-primary text-black px-6 py-3 rounded-full font-medium shadow hover:bg-primary/90 transition-all duration-300">Back to Shop</a>
     </div>
@@ -95,4 +95,4 @@ const page =   ({params}) => {
   )
 }
 
-export default page; 
+export default Page; 

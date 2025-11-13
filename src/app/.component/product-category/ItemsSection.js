@@ -77,7 +77,7 @@ const ItemsSection = ({  onClose ,url}) => {
     if (max_price) setMaxPrice(parseInt(max_price));
     if (per_page) useStoreData.getState().setShowProduct(per_page);
     if (orderby && order) useStoreData.getState().setSelect(`${orderby},${order}`);
-  }, []);
+  }, [searchParams, setFilter, setMinPrice, setMaxPrice]);
 
   // Track applied filters
   useEffect(() => {

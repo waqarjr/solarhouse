@@ -26,7 +26,7 @@ export default function OrderDetails() {
         }
       }
         getData()
-    },[])
+    },[orderid])
     console.log(data.line_items?.subtotal);
 
     if(loading) return <OrderDetailsSkeleton/>

@@ -64,7 +64,7 @@ const ItemsSection = ({  onClose ,url}) => {
 };
 
 fetchPriceRange();
-  }, []);
+  }, [newUrl, searchParams, setMaxPrice, setMaxVal, setMinPrice, setMinVal ]);
 
   // Sync Zustand with URL params on mount - ONLY ONCE
   useEffect(() => {
@@ -80,7 +80,7 @@ fetchPriceRange();
     if (max_price) setMaxPrice(parseInt(max_price));
     if (per_page) useStoreData.getState().setShowProduct(per_page);
     if (orderby && order) useStoreData.getState().setSelect(`${orderby},${order}`);
-  }, []);
+  }, [searchParams, setFilter, setMaxPrice, setMinPrice]);
 
   // Track applied filters
   useEffect(() => {
@@ -141,7 +141,7 @@ fetchPriceRange();
       const url = newQuery ? `/product-tag/${newUrl}?${newQuery}` : `/product-tag/${newUrl}`;
       router.replace(url);
     }
-  }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal]);
+  }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal,newUrl,router,searchParams]);
 
   const getApiCategories = async () => {
     try {

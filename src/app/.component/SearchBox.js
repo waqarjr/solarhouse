@@ -59,7 +59,7 @@ const SearchBox = () => {
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [openSearch]);
+  }, [openSearch,]);
 
   const handleClose = () => {
     setOpenSearch(false);
@@ -130,7 +130,7 @@ const SearchBox = () => {
               {!loading && searchResults.length > 0 && (
                 <div>
                   <p className="text-gray-600 text-sm sm:text-base mb-4 sm:mb-6">
-                    Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"
+                    Found {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for &quot;{searchQuery}&quot;
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
                     {searchResults.map((product) => (

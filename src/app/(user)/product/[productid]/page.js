@@ -40,7 +40,7 @@ const ProductPage = () => {
             }
         }
         getApiProducts()
-    }, [])
+    }, [productid])
 
     const handleAddToCart = (id) => {
         if (localStorage.getItem("name")) {
@@ -91,9 +91,10 @@ const ProductPage = () => {
                             {/* Thumbnail Images */}
                             <div className="grid grid-cols-4 gap-3">
                                 {currentProduct?.images.map((image, index) => (
-                                    <button key={index} onClick={() => setSelectedImage(index)} className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-blue-600 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}>
-                                        <img src={image.src} alt={`${currentProduct.name} ${index + 1}`} className="w-full h-full object-cover" />
+                                   <button key={index} onClick={() => setSelectedImage(index)} className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-blue-600 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}>
+                                        <Image src={image.src} alt={`${currentProduct.name} ${index + 1}`} width={500} height={500} className="w-full h-full object-cover" />
                                     </button>
+
                                 ))}
                             </div>
                         </div>

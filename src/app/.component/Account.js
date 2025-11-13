@@ -126,7 +126,7 @@ useEffect(()=>{
   
   }
   fetchData();     
-},[])
+},[clearUser])
 
 
 

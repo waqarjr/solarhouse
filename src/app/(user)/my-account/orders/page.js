@@ -34,7 +34,7 @@ const Page = () => {
     }
   }
     getData()
-  },[])
+  },[user.id])
 
 if(loading) return <Skeleton/>
 

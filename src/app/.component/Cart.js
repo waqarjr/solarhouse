@@ -5,7 +5,7 @@ import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from "next/navigation";
 import api from "../lib/api";
 import Swal from "sweetalert2";
-
+import Image from "next/image";
 const Cart = () => {
   const [openCart, setOpenCart] = useState(false);
   const { cart, toggleCart } = useStoreData();

@@ -8,7 +8,7 @@ import { SlidersHorizontal, X ,ChevronDown} from "lucide-react";
 
 
 
-const page =   ({params}) => {
+const Page =   ({params}) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const {slug} =  use(params);
   const newHero = `/product-tag/${slug}` 
@@ -53,4 +53,4 @@ const page =   ({params}) => {
   )
 }
 
-export default page; 
+export default Page; 

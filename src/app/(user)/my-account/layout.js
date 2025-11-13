@@ -84,7 +84,7 @@ useEffect(()=>{
     }
   }
   fetchData();     
-  },[])
+  },[clearUser,setUser])
 
 if(loading) return (<>
   <div className="flex items-center justify-center min-h-[600px] bg-gray-50">

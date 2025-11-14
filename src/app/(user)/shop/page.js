@@ -2,8 +2,9 @@
 import HeroSection from "@/app/.component/HeroSection";
 import ItemsSection from "@/app/.component/ItemsSection";
 import Products from "@/app/.component/Products";
+import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 
 const Page = () => {
@@ -17,11 +18,15 @@ const Page = () => {
       <div className='mx-auto max-w-7xl'>
         <div className='hidden lg:grid lg:grid-cols-[20%_auto] items-start'>
           <ItemsSection />
-          <Products />
+          <Suspense fallback={<ProductGridSkeleton />}>
+            <Products />
+          </Suspense>
         </div>
 
         <div className='lg:hidden'>
-          <Products />
+          <Suspense fallback={<ProductGridSkeleton />}>
+            <Products />
+          </Suspense>
         </div>
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg z-40 flex items-center gap-2 transition-all duration-300" aria-label="Open filters">
         <SlidersHorizontal size={24} />

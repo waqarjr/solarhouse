@@ -15,19 +15,9 @@ const ProductPage = () => {
     const [selectedImage, setSelectedImage] = useState(0)
     const [isWishlisted, setIsWishlisted] = useState(false)
     const [apiProduct, setApiProducts] = useState([])
-    const { toggleCart } = useStoreData()
+    const { toggleCart, toggleWishlist } = useStoreData()
     const [loading, setLoading] = useState(true)
 
-    const product = {
-        features: [
-            "Advanced computer equipment",
-            "Laptops",
-            "Online and offline servers",
-            "Home and office usage"
-        ],
-    }
-
-    
     useEffect(() => {
         const getApiProducts = async () => {
             try {
@@ -41,6 +31,43 @@ const ProductPage = () => {
         }
         getApiProducts()
     }, [productid])
+
+    // Check if product is already in wishlist on component mount
+    useEffect(() => {
+        if (apiProduct[0]?.id) {
+            const wishlistStorage = localStorage.getItem("wishlist")
+            if (wishlistStorage) {
+                const wishlistData = JSON.parse(wishlistStorage)
+                const isInWishlist = wishlistData.some((item) => item.id === apiProduct[0].id)
+                setIsWishlisted(isInWishlist)
+            }
+        }
+    }, [apiProduct])
+
+    const wishlistData = (id) => {
+        const wishlistStorage = localStorage.getItem("wishlist")
+        
+        if (wishlistStorage) {
+            const existingData = JSON.parse(wishlistStorage)
+            const filter = existingData.filter((v) => v.id === id)
+            
+            if (filter.length) {
+                const updatedData = existingData.filter((v) => v.id !== id)
+                localStorage.setItem("wishlist", JSON.stringify(updatedData))
+                setIsWishlisted(false)
+            } else {
+                const updatedData = [...existingData, { id: id }]
+                localStorage.setItem("wishlist", JSON.stringify(updatedData))
+                setIsWishlisted(true)
+            }
+        } else {
+            const updatedData = [{ id: id }]
+            localStorage.setItem("wishlist", JSON.stringify(updatedData))
+            setIsWishlisted(true)
+        }
+        
+        toggleWishlist()
+    }
 
     const handleAddToCart = (id) => {
         if (localStorage.getItem("name")) {
@@ -94,7 +121,6 @@ const ProductPage = () => {
                                    <button key={index} onClick={() => setSelectedImage(index)} className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index ? 'border-blue-600 shadow-md' : 'border-gray-200 hover:border-gray-300'}`}>
                                         <Image src={image.src} alt={`${currentProduct.name} ${index + 1}`} width={500} height={500} className="w-full h-full object-cover" />
                                     </button>
-
                                 ))}
                             </div>
                         </div>
@@ -134,26 +160,26 @@ const ProductPage = () => {
                             )}
 
                             <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
-                                <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
-                                    <button onClick={() => { (quantity > 1) && setQuantity(pre => pre - 1) }} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1}>
-                                        <Minus className="w-5 h-5" />
+                                <div className="flex items-center justify-center border-2 border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
+                                    <button onClick={() => { (quantity > 1) && setQuantity(pre => pre - 1) }} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1}>
+                                        <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
-                                    <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">
+                                    <span className="px-4 sm:px-6 py-2 sm:py-3 font-semibold text-base sm:text-lg min-w-[50px] sm:min-w-[60px] text-center">
                                         {quantity}
                                     </span>
-                                    <button onClick={() => setQuantity(pre => pre + 1)} className="px-4 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors">
-                                        <Plus className="w-5 h-5" />
+                                    <button onClick={() => setQuantity(pre => pre + 1)} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors">
+                                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
                                 </div>
-                                <button onClick={() => handleAddToCart(currentProduct?.id)} className="flex-1 cursor-pointer bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+                                <button onClick={() => handleAddToCart(currentProduct?.id)} className="flex-1 cursor-pointer bg-blue-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg text-sm sm:text-base">
                                     Add to Cart
                                 </button>
                             </div>
 
-                            <button onClick={() => setIsWishlisted(!isWishlisted)} className={`flex cursor-pointer items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 transition-all ${isWishlisted ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-gray-400'}`}>
+                            <button onClick={() => wishlistData(currentProduct?.id)} className={`flex cursor-pointer items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 transition-all ${isWishlisted ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-gray-400'}`}>
                                 <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
                                 <span className="font-medium">
-                                    {isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}
+                                    {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
                                 </span>
                             </button>
 

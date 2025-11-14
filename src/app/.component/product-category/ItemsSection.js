@@ -202,8 +202,8 @@ const ItemsSection = ({  onClose ,url}) => {
     if (onClose) onClose();
   };
 
-  const handleTagClick = (tagId) => {
-    router.push(`/shop?tag=${tagId}`);
+  const handleTagClick = (tagSlug) => {
+    router.push(`/product-tag/${tagSlug}`);
     if (onClose) onClose();
   };
 
@@ -298,7 +298,7 @@ const ItemsSection = ({  onClose ,url}) => {
         ) : (
           <>
             {apiTags.map((value) => (
-              <button key={value.id} onClick={() => handleTagClick(value.id)} className="m-1 border-2 rounded-3xl border-gray-300 px-3 py-1 text-center text-gray-600 hover:text-white hover:bg-blue-500 hover:border-blue-500 duration-150 cursor-pointer">
+              <button key={value.id} onClick={() => handleTagClick(value.slug)} className="m-1 border-2 rounded-3xl border-gray-300 px-3 py-1 text-center text-gray-600 hover:text-white hover:bg-blue-500 hover:border-blue-500 duration-150 cursor-pointer">
                 {value.name}
               </button>
             ))}

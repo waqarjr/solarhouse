@@ -6,18 +6,49 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from "next/navigation";
 import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
+import Swal from 'sweetalert2';
 
 const Products = ({url}) => {
     const newUrl = url;
-  const { showProduct, setShowProduct, select, setSelect, minVal, maxVal } = useStoreData();
+  const { showProduct, setShowProduct, select, setSelect, minVal, maxVal,toggleCart, toggleWishlist  } = useStoreData();
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
   const router = useRouter();
-  const { toggleCart } = useStoreData();
   const [changeDiv, setChangeDiv] = useState(false);
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [apiPricesFetched, setApiPricesFetched] = useState(false);
+
+  useEffect(() => {
+    const loadWishlist = () => {
+      const wishlistStorage = localStorage.getItem("wishlist");
+      if (wishlistStorage) {
+        const wishlistData = JSON.parse(wishlistStorage);
+        const wishlistIds = wishlistData.map(item => item.id);
+        setWishlistItems(wishlistIds);
+      }
+    };
+    loadWishlist();
+  }, []);
+
+  const isInWishlist = (id) => {
+    return wishlistItems.includes(id);
+  };
+  const alertSwal = (icons, data) => {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+    Toast.fire({
+      icon: icons,
+      title: data,
+    });
+  };
+
+
 
   const cartData = (id) => {
     if (localStorage.getItem("name")) {
@@ -34,6 +65,38 @@ const Products = ({url}) => {
       const existingData = [];
       const updatedData = [...existingData, { id: id, qty: 1 }];
       localStorage.setItem("name", JSON.stringify(updatedData));
+    }
+  };
+
+  const wishlistData = (id) => {
+    const wishlistStorage = localStorage.getItem("wishlist");
+
+    if (wishlistStorage) {
+      const existingData = JSON.parse(wishlistStorage);
+      const filter = existingData.filter((v) => v.id === id);
+
+      if (filter.length) {
+        // Product exists in wishlist, remove it
+        const updatedData = existingData.filter((v) => v.id !== id);
+        localStorage.setItem("wishlist", JSON.stringify(updatedData));
+        setWishlistItems(updatedData.map(item => item.id));
+        toggleWishlist();
+        alertSwal("error", "Product removed from wishlist");
+      } else {
+        // Product doesn't exist, add it
+        const updatedData = [...existingData, { id: id }];
+        localStorage.setItem("wishlist", JSON.stringify(updatedData));
+        setWishlistItems(updatedData.map(item => item.id));
+        toggleWishlist();
+        alertSwal("success", "Product added to wishlist successfully");
+      }
+    } else {
+      // No wishlist exists, create new one
+      const updatedData = [{ id: id }];
+      localStorage.setItem("wishlist", JSON.stringify(updatedData));
+      setWishlistItems([id]);
+      toggleWishlist();
+      alertSwal("success", "Product added to wishlist successfully");
     }
   };
 
@@ -121,8 +184,8 @@ const Products = ({url}) => {
               <Image onClick={() => router.push(`/product/${value.slug}`)} unoptimized src={value.images[0]?.src || "/image1.jpg"} alt={value.images[0]?.alt || "products image"} priority width={256} height={0} className={`${changeDiv ? "rounded-2xl" : ""} object-cover w-full h-full group-hover:scale-105 transition-transform duration-500`} />
 
               <div className={`${changeDiv ? "hidden md:flex" : "flex"} absolute top-3 right-3 flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500`}>
-                <button className="bg-white hover:bg-red-500 cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300" aria-label="Add to wishlist">
-                  <Heart size={18} className="text-red-500 hover:text-white transition-colors" />
+               <button onClick={() => wishlistData(value.id)} className={`${isInWishlist(value.id) ? 'bg-red-500' : 'bg-white hover:bg-red-500'} cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300 group/heart`} aria-label="Add to wishlist">
+                  <Heart size={18} className={`${isInWishlist(value.id) ? 'text-white fill-current' : 'text-red-500 group-hover/heart:text-white'} transition-colors`} />
                 </button>
                 <button className="bg-white hover:bg-gray-700 cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300" aria-label="Quick view">
                   <Search size={18} className="text-gray-700 hover:text-white transition-colors" />

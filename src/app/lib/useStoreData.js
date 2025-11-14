@@ -4,6 +4,9 @@ const useStoreData = create((set) => ({
   cart: false,
   toggleCart: () => set((state) => ({ cart: !state.cart })),
   
+  wishlist: false,
+  toggleWishlist: () => set((state) => ({ wishlist: !state.wishlist })),
+  
   minVal: 0,
   maxVal: 100000,
   minGap: 1000,

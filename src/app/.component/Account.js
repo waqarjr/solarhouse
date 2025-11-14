@@ -158,7 +158,7 @@ if(valid) {
   return(<>
     <div className="relative group">
       <button className="flex items-center justify-center gap-3 hover:text-blue-500 cursor-pointer transition-colors" >
-        <User />
+        <User  />
       </button>
   <ul className="absolute top-10 -left-10 w-[150px] text-black bg-white rounded-md text-center
                     translate-y-2 opacity-0 invisible

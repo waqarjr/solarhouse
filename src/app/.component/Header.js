@@ -71,7 +71,7 @@ const Header = () => {
                     <div className=' flex items-center justify-center gap-3 [&>*]:hover:text-blue-500 [&>*]:cursor-pointer [&>*]:transition-colors'>
                         <Account/>
                         <SearchBox />
-                        <Heart />
+                        <Link href="/wishlist" ><Heart/></Link>
                         <Cart />
                     </div>
                 </div>

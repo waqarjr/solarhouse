@@ -1,9 +1,8 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronRight, Trash2, ShoppingBag } from "lucide-react";
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
 import CartSkeleton from "./Skeleton";
 import api from "@/app/lib/api";
 import Link from "next/link";
@@ -17,26 +16,12 @@ const Page = () => {
   const [emptyCart, setEmptyCart] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const isInitialMount = useRef(true);
-  const lastAction = useRef(null);
 
   useEffect(() => {
-    const getData = async (string, showAlert = false) => {
+    const getData = async (string) => {
       try {
         const response = await api.get(`/products?include=${string}`);
         setData(response.data);
-        
-        if (showAlert && lastAction.current === 'quantity-update') {
-          Swal.fire({
-            icon: "success",
-            title: "Product quantity updated successfully",
-            toast: true,
-            position: "top-end",
-            timer: 2000,
-            showConfirmButton: false,
-          });
-          lastAction.current = null;
-        }
       } catch (e) {
         console.error(e.message);
         setEmptyCart(true);
@@ -56,13 +41,7 @@ const Page = () => {
       }
 
       const string = idData.join(",");
-      
-      if (isInitialMount.current) {
-        getData(string, false);
-        isInitialMount.current = false;
-      } else {
-        getData(string, true);
-      }
+      getData(string);
     } else {
       setEmptyCart(true);
       setLoading(false);
@@ -96,13 +75,10 @@ const Page = () => {
         item.id === id ? { ...item, qty: quantity } : item
       );
       localStorage.setItem("name", JSON.stringify(updatedData));
-      
-      lastAction.current = 'quantity-update';
     }
     toggleCart();
   };
 
-  // Handle Remove Item
   const remove = (id) => {
     const storageData = localStorage.getItem("name");
     if (!storageData) return;
@@ -110,19 +86,8 @@ const Page = () => {
     const jsonObject = JSON.parse(storageData);
     const filtered = jsonObject.filter((val) => val.id !== id);
     localStorage.setItem("name", JSON.stringify(filtered));
-
-    lastAction.current = 'remove';
     
     toggleCart();
-    
-    Swal.fire({
-      icon: "error",
-      title: "Product removed successfully",
-      toast: true,
-      position: "top-end",
-      timer: 2000,
-      showConfirmButton: false,
-    });
   };
 
   // Loading State
@@ -163,7 +128,7 @@ const Page = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+      <div className="bg-white ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-3 sm:mb-6">
             <Link href="/"><span className="hover:text-gray-900 cursor-pointer">Home</span></Link>

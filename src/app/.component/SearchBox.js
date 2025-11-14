@@ -77,7 +77,7 @@ const SearchBox = () => {
     <>
       {/* Search Icon Button */}
       <button className="flex items-center justify-center gap-3 hover:text-blue-600 cursor-pointer transition-all" onClick={() => setOpenSearch(true)}>
-        <Search />
+        <Search  />
       </button>
 
       <div className={`fixed inset-0 z-50 bg-white transition-transform duration-500 ease-in-out ${openSearch ? 'translate-y-0' : '-translate-y-full'}`}>

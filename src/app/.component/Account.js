@@ -12,7 +12,7 @@ import useStoreData from "../lib/useStoreData";
 
 const Account = () => {
 
-const {valid, setUser, clearUser,user } = useStoreData();
+const {valid, setUser, clearUser, } = useStoreData();
 
 const [openCart ,setOpenCart] = useState(false);
 const [register , setRegister] = useState(true);
@@ -126,7 +126,7 @@ useEffect(()=>{
   
   }
   fetchData();     
-},[clearUser])
+},[clearUser,setUser])
 
 
 

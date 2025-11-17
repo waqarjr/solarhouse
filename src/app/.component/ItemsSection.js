@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import api from '../lib/api';
@@ -7,14 +7,22 @@ import PriceSlidebar from "@/app/.component/PriceSlidebar";
 import useStoreData from '../lib/useStoreData';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const ItemsSection = ({  onClose }) => {
+const SOURCE_TYPES = {
+  SHOP: "shop",
+  CATEGORY: "category",
+  TAG: "tag",
+};
+
+const ItemsSection = ({ onClose, source = SOURCE_TYPES.SHOP, slug = null }) => {
   const [activeFilters, setActiveFilters] = useState(true);
   const [category, setCategory] = useState(true);
   const [price, setPrice] = useState(true);
   const [tag, setTags] = useState(true);
   const [apiCategories, setApiCategories] = useState([]);
   const [apiTags, setApiTags] = useState([]);
-  const { minPrice, maxPrice, showProduct, select, filter,setSelect ,setFilter, setMinPrice, setMaxPrice, minVal, maxVal, setMinVal, setMaxVal,setShowProduct } = useStoreData();
+  const [baseFilters, setBaseFilters] = useState({});
+  const [filtersReady, setFiltersReady] = useState(source === SOURCE_TYPES.SHOP);
+  const { minPrice, maxPrice, showProduct, select, filter, setSelect, setFilter, setMinPrice, setMaxPrice, minVal, maxVal, setMinVal, setMaxVal, setShowProduct } = useStoreData();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,6 +32,12 @@ const ItemsSection = ({  onClose }) => {
   const [apiPricesFetched, setApiPricesFetched] = useState(false);
   const isInitialMount = useRef(true);
 
+  const basePath = source === SOURCE_TYPES.CATEGORY && slug
+    ? `/product-category/${slug}`
+    : source === SOURCE_TYPES.TAG && slug
+      ? `/product-tag/${slug}`
+      : "/shop";
+
   // Static default values - never changes
   const defaultValues = useRef({
     filter: null,
@@ -31,11 +45,71 @@ const ItemsSection = ({  onClose }) => {
     select: "date,desc",
   });
 
-  // Fetch min/max prices from API and set defaults ONCE
   useEffect(() => {
+    if (source === SOURCE_TYPES.SHOP) {
+      setBaseFilters({});
+      setFiltersReady(true);
+      return;
+    }
+
+    if (!slug) {
+      setBaseFilters({});
+      setFiltersReady(true);
+      return;
+    }
+
+    let active = true;
+    setFiltersReady(false);
+
+    const taxonomyEndpoint = source === SOURCE_TYPES.CATEGORY ? "/products/categories" : "/products/tags";
+    const taxonomyKey = source === SOURCE_TYPES.CATEGORY ? "category" : "tag";
+
+    const resolveTaxonomy = async () => {
+      try {
+        const response = await api.get(`${taxonomyEndpoint}?slug=${slug}`);
+        const taxonomy = response.data?.[0];
+
+        if (!active) return;
+
+        if (taxonomy?.id) {
+          setBaseFilters({ [taxonomyKey]: taxonomy.id });
+        } else {
+          setBaseFilters({});
+        }
+      } catch (error) {
+        if (active) {
+          console.error(`Error resolving ${source} slug:`, error.message);
+          setBaseFilters({});
+        }
+      } finally {
+        if (active) setFiltersReady(true);
+      }
+    };
+
+    resolveTaxonomy();
+
+    return () => {
+      active = false;
+    };
+  }, [source, slug]);
+
+  // Fetch min/max prices from API and set defaults ONCE per base filter
+  useEffect(() => {
+    if (!filtersReady) return;
+
     const fetchPriceRange = async () => {
       try {
-        const response = await api.get("/products?per_page=100&orderby=price&order=asc");
+        const params = new URLSearchParams();
+        Object.entries(baseFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            params.append(key, value);
+          }
+        });
+        params.append("per_page", "100");
+        params.append("orderby", "price");
+        params.append("order", "asc");
+
+        const response = await api.get(`/products?${params.toString()}`);
         const products = response.data;
         if (products.length > 0) {
           const prices = products.map(p => parseFloat(p.price)).filter(p => !isNaN(p));
@@ -60,7 +134,7 @@ const ItemsSection = ({  onClose }) => {
       }
     };
     fetchPriceRange();
-  }, [searchParams, setMaxPrice, setMaxVal, setMinPrice,setMinVal]);
+  }, [filtersReady, baseFilters, searchParams, setMaxPrice, setMaxVal, setMinPrice, setMinVal]);
 
   // Sync Zustand with URL params on mount - ONLY ONCE
   useEffect(() => {
@@ -134,10 +208,10 @@ const ItemsSection = ({  onClose }) => {
     const newQuery = newParams.toString();
     
     if (currentQuery !== newQuery) {
-      const url = newQuery ? `/shop?${newQuery}` : "/shop";
+      const url = newQuery ? `${basePath}?${newQuery}` : basePath;
       router.replace(url);
     }
-  }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal,router,searchParams]);
+  }, [minPrice, maxPrice, filter, showProduct, select, apiPricesFetched, minVal, maxVal, router, searchParams, basePath]);
 
   const getApiCategories = async () => {
     try {

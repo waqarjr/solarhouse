@@ -9,14 +9,22 @@ import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
 import Swal from 'sweetalert2';
 
 // Import utility functions
-import { addToCart, isInCart as checkInCart } from '@/app/lib/cartUtils';
-import { toggleWishlist as toggleWishlistItem, isInWishlist as checkInWishlist, getWishlistIds } from '@/app/lib/wishlistUtils';
+import { addToCart } from '@/app/lib/cartUtils';
+import { toggleWishlist as toggleWishlistItem, getWishlistIds } from '@/app/lib/wishlistUtils';
 
-const Products = () => {
+const SOURCE_TYPES = {
+  SHOP: "shop",
+  CATEGORY: "category",
+  TAG: "tag",
+};
+
+const Products = ({ source = SOURCE_TYPES.SHOP, slug = null }) => {
   const { showProduct, setShowProduct, setSelect, minVal, maxVal, toggleCart, toggleWishlist } = useStoreData();
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [baseFilters, setBaseFilters] = useState({});
+  const [filtersReady, setFiltersReady] = useState(source === SOURCE_TYPES.SHOP);
   const router = useRouter();
   const [changeDiv, setChangeDiv] = useState(false);
   const searchParams = useSearchParams();
@@ -63,7 +71,55 @@ const Products = () => {
   }, [minVal, maxVal]);
 
   useEffect(() => {
-    if (!apiPricesFetched) return;
+    if (source === SOURCE_TYPES.SHOP) {
+      setBaseFilters({});
+      setFiltersReady(true);
+      return;
+    }
+
+    if (!slug) {
+      setBaseFilters({});
+      setFiltersReady(true);
+      return;
+    }
+
+    let active = true;
+    setFiltersReady(false);
+
+    const taxonomyEndpoint = source === SOURCE_TYPES.CATEGORY ? "/products/categories" : "/products/tags";
+    const taxonomyKey = source === SOURCE_TYPES.CATEGORY ? "category" : "tag";
+
+    const resolveTaxonomy = async () => {
+      try {
+        const response = await api.get(`${taxonomyEndpoint}?slug=${slug}`);
+        const taxonomy = response.data?.[0];
+
+        if (!active) return;
+
+        if (taxonomy?.id) {
+          setBaseFilters({ [taxonomyKey]: taxonomy.id });
+        } else {
+          setBaseFilters({});
+        }
+      } catch (error) {
+        if (active) {
+          console.error(`Error resolving ${source} slug:`, error.message);
+          setBaseFilters({});
+        }
+      } finally {
+        if (active) setFiltersReady(true);
+      }
+    };
+
+    resolveTaxonomy();
+
+    return () => {
+      active = false;
+    };
+  }, [source, slug]);
+
+  useEffect(() => {
+    if (!apiPricesFetched || !filtersReady) return;
 
     const productCata = searchParams.get("product-cata") || null;
     const min_price = searchParams.get("min-price") || minVal;
@@ -71,11 +127,29 @@ const Products = () => {
     const per_page = searchParams.get("per_page") || "12";
     const orderby = searchParams.get("orderby") || "date";
     const order = searchParams.get("order") || "desc";
+    const params = new URLSearchParams();
+    const resolvedFilters = { ...baseFilters };
+
+    if (productCata) {
+      resolvedFilters.category = productCata;
+    }
+
+    Object.entries(resolvedFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== "") {
+        params.append(key, value);
+      }
+    });
+
+    params.append("min_price", min_price);
+    params.append("max_price", max_price);
+    params.append("per_page", per_page);
+    params.append("orderby", orderby);
+    params.append("order", order);
 
     const fetchFilteredProducts = async () => {
       try {
-        const query = `/products?${productCata ? `category=${productCata}&` : ""}min_price=${min_price}&max_price=${max_price}&per_page=${per_page}&orderby=${orderby}&order=${order}`;
-        const response = await api.get(query);
+        setLoading(true);
+        const response = await api.get(`/products?${params.toString()}`);
         setProducts(response.data);
         setTotalProducts(response.headers["x-wp-total"] || response.data.length);
       } catch (e) {
@@ -86,9 +160,9 @@ const Products = () => {
     };
 
     fetchFilteredProducts();
-  }, [searchParams, apiPricesFetched, minVal, maxVal]);
+  }, [searchParams, apiPricesFetched, minVal, maxVal, filtersReady, baseFilters]);
 
-  if (loading || !apiPricesFetched) return <ProductGridSkeleton />;
+  if (loading || !apiPricesFetched || !filtersReady) return <ProductGridSkeleton />;
 
   return (
     <div className='flex flex-col'>

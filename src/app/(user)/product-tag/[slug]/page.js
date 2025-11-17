@@ -1,8 +1,8 @@
 'use client'
 import React,{use} from "react";
 import HeroSection from "@/app/.component/HeroSection";
-import ItemsSection from "@/app/.component/product-tag/ItemsSection";
-import Products from "@/app/.component/product-tag/Products";
+import ItemsSection from "@/app/.component/ItemsSection";
+import Products from "@/app/.component/Products";
 import { useState } from "react";
 import { SlidersHorizontal, X ,ChevronDown} from "lucide-react";
 
@@ -18,12 +18,12 @@ const Page =   ({params}) => {
       <HeroSection url={newHero} />
         <div className='mx-auto max-w-7xl'>
           <div className='hidden lg:grid lg:grid-cols-[20%_auto] items-start'>
-            <ItemsSection url={slug} />
-            <Products url={slug} />
+            <ItemsSection source="tag" slug={slug} />
+            <Products source="tag" slug={slug} />
           </div>
 
           <div className='lg:hidden'>
-            <Products url={slug} />
+            <Products source="tag" slug={slug} />
           </div>
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden fixed bottom-6 right-6 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg z-40 flex items-center gap-2 transition-all duration-300" aria-label="Open filters">
             <SlidersHorizontal size={24} />
@@ -43,7 +43,7 @@ const Page =   ({params}) => {
               </div>
               
               <div className="p-4">
-                <ItemsSection isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} url={slug} />
+                <ItemsSection isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} source="tag" slug={slug} />
               </div>
             </div>
           </>

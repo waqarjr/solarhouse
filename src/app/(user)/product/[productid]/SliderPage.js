@@ -79,13 +79,13 @@ export default function ProductSlider() {
 }
 
   return (
-    <div className="flex items-center justify-center p-4 sm:p-8">
-      <div className="w-full max-w-7xl relative">
+    <div className="flex items-center justify-center my-8 mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full max-w-7xl relative ">
         <div className="text-center mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-black mb-2">Featured Products</h1>
         </div>
 
-        <button onClick={prevSlide} disabled={!canGoPrev} className={`absolute -left-4 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full transition-all duration-300 ${
+        <button onClick={prevSlide} disabled={!canGoPrev} className={`absolute -left-4 sm:left-0 top-1/2 -translate-y-1/2 z-10 p-3 mx-3 rounded-full transition-all duration-300 ${
           canGoPrev ? 'bg-white text-gray-900 hover:bg-gray-100 hover:scale-110 shadow-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'}`}
           aria-label="Previous slides">
           <ChevronLeft size={24} />
@@ -137,7 +137,7 @@ export default function ProductSlider() {
           </div>
         </div>
 
-        <button onClick={nextSlide} disabled={!canGoNext} className={`absolute -right-4 sm:right-0 top-1/2 -translate-y-1/2 z-10 p-3 rounded-full transition-all duration-300 ${
+        <button onClick={nextSlide} disabled={!canGoNext} className={`absolute -right-4 sm:right-0 top-1/2 -translate-y-1/2 z-10 mx-3 p-3 rounded-full transition-all duration-300 ${
             canGoNext ? 'bg-white text-gray-900 hover:bg-gray-100 hover:scale-110 shadow-lg' : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
           }`} aria-label="Next slides">
           <ChevronRight size={24} />

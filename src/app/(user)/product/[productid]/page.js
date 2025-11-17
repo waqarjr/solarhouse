@@ -8,6 +8,12 @@ import useStoreData from '@/app/lib/useStoreData'
 import api from '@/app/lib/api'
 import ProductPageSkeleton from "./ProductPageSkeleton"
 import SlidePerView from './SliderPage'
+import Swal from 'sweetalert2'
+import { addToCart as addToCartUtil, updateCartQuantity } from '@/app/lib/cartUtils'
+import { 
+    toggleWishlist as toggleWishlistItem, 
+    isInWishlist as checkInWishlist 
+} from '@/app/lib/wishlistUtils'
 
 const ProductPage = () => {
     const { productid } = useParams()
@@ -17,6 +23,20 @@ const ProductPage = () => {
     const [apiProduct, setApiProducts] = useState([])
     const { toggleCart, toggleWishlist } = useStoreData()
     const [loading, setLoading] = useState(true)
+
+    const alertSwal = (icons, message) => {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: "top-end",
+            timer: 1500,
+            timerProgressBar: true,
+            showConfirmButton: false,
+        })
+        Toast.fire({
+            icon: icons,
+            title: message,
+        })
+    }
 
     useEffect(() => {
         const getApiProducts = async () => {
@@ -35,57 +55,43 @@ const ProductPage = () => {
     // Check if product is already in wishlist on component mount
     useEffect(() => {
         if (apiProduct[0]?.id) {
-            const wishlistStorage = localStorage.getItem("wishlist")
-            if (wishlistStorage) {
-                const wishlistData = JSON.parse(wishlistStorage)
-                const isInWishlist = wishlistData.some((item) => item.id === apiProduct[0].id)
-                setIsWishlisted(isInWishlist)
-            }
+            const inWishlist = checkInWishlist(apiProduct[0].id)
+            setIsWishlisted(inWishlist)
         }
     }, [apiProduct])
 
-    const wishlistData = (id) => {
-        const wishlistStorage = localStorage.getItem("wishlist")
+    const handleWishlistToggle = (id) => {
+        const result = toggleWishlistItem(id)
         
-        if (wishlistStorage) {
-            const existingData = JSON.parse(wishlistStorage)
-            const filter = existingData.filter((v) => v.id === id)
+        if (result.success) {
+            setIsWishlisted(result.isAdded)
+            toggleWishlist()
             
-            if (filter.length) {
-                const updatedData = existingData.filter((v) => v.id !== id)
-                localStorage.setItem("wishlist", JSON.stringify(updatedData))
-                setIsWishlisted(false)
+            if (result.isAdded) {
+                alertSwal("success", "Product added to wishlist successfully")
             } else {
-                const updatedData = [...existingData, { id: id }]
-                localStorage.setItem("wishlist", JSON.stringify(updatedData))
-                setIsWishlisted(true)
+                alertSwal("error", "Product removed from wishlist")
             }
         } else {
-            const updatedData = [{ id: id }]
-            localStorage.setItem("wishlist", JSON.stringify(updatedData))
-            setIsWishlisted(true)
+            alertSwal("error", result.message)
         }
-        
-        toggleWishlist()
     }
 
     const handleAddToCart = (id) => {
-        if (localStorage.getItem("name")) {
-            const existingData = JSON.parse(localStorage.getItem("name"))
-            const filter = existingData.filter((v) => v.id === id)
-            if (filter.length) {
-                filter[0].qty = quantity
-                localStorage.setItem("name", JSON.stringify(existingData))
-            } else {
-                const updatedData = [...existingData, { id: id, qty: quantity }]
-                localStorage.setItem("name", JSON.stringify(updatedData))
+        const result = addToCartUtil(id)
+        
+        if (result.success) {
+            // If product already exists in cart, update quantity
+            const existingItem = result.cartItems.find(item => item.id === id)
+            if (existingItem && quantity > 1) {
+                updateCartQuantity(id, quantity)
             }
+            
+            toggleCart()
+            alertSwal("success", "Product added to cart successfully")
         } else {
-            const existingData = []
-            const updatedData = [...existingData, { id: id, qty: quantity }]
-            localStorage.setItem("name", JSON.stringify(updatedData))
+            alertSwal("error", result.message)
         }
-        toggleCart()
     }
 
     if (loading) return <ProductPageSkeleton />
@@ -161,13 +167,13 @@ const ProductPage = () => {
 
                             <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
                                 <div className="flex items-center justify-center border-2 border-gray-300 rounded-lg overflow-hidden w-full sm:w-auto">
-                                    <button onClick={() => { (quantity > 1) && setQuantity(pre => pre - 1) }} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1}>
+                                    <button onClick={() => { (quantity > 1) && setQuantity(pre => pre - 1) }} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors" disabled={quantity === 1}>
                                         <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
                                     <span className="px-4 sm:px-6 py-2 sm:py-3 font-semibold text-base sm:text-lg min-w-[50px] sm:min-w-[60px] text-center">
                                         {quantity}
                                     </span>
-                                    <button onClick={() => setQuantity(pre => pre + 1)} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors">
+                                    <button onClick={() => setQuantity(pre => pre + 1)} className="px-3 sm:px-4 py-3 sm:py-4 cursor-pointer w-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
                                         <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </button>
                                 </div>
@@ -176,7 +182,7 @@ const ProductPage = () => {
                                 </button>
                             </div>
 
-                            <button onClick={() => wishlistData(currentProduct?.id)} className={`flex cursor-pointer items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 transition-all ${isWishlisted ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-gray-400'}`}>
+                            <button onClick={() => handleWishlistToggle(currentProduct?.id)} className={`flex cursor-pointer items-center justify-center gap-2 px-6 py-3 rounded-lg border-2 transition-all ${isWishlisted ? 'border-red-500 text-red-500 bg-red-50' : 'border-gray-300 text-gray-700 hover:border-gray-400'}`}>
                                 <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
                                 <span className="font-medium">
                                     {isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}

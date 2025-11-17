@@ -6,6 +6,11 @@ import api from '../lib/api';
 import useStoreData from "@/app/lib/useStoreData";
 import Swal from 'sweetalert2';
 import { useRouter } from 'next/navigation';
+import { addToCart } from '@/app/lib/cartUtils';
+import { 
+  toggleWishlist as toggleWishlistItem, 
+  getWishlistIds 
+} from '@/app/lib/wishlistUtils';
 
 // Skeleton Component
 const ProductSkeleton = () => (
@@ -19,20 +24,6 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const alertSwal = (icons, data) => {
-  const Toast = Swal.mixin({
-    toast: true,
-    position: "top-end",
-    timer: 1500,
-    timerProgressBar: true,
-    showConfirmButton: false,
-  });
-  Toast.fire({
-    icon: `${icons}`,
-    title: `${data}`,
-  });
-}
-
 const NewArival = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,74 +31,54 @@ const NewArival = () => {
   const { toggleCart, toggleWishlist } = useStoreData();
   const router = useRouter();
 
-  // Load wishlist from localStorage on mount
+  const alertSwal = (icons, data) => {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+    Toast.fire({
+      icon: icons,
+      title: data,
+    });
+  };
+
   useEffect(() => {
-    const loadWishlist = () => {
-      const wishlistStorage = localStorage.getItem("wishlist");
-      if (wishlistStorage) {
-        const wishlistData = JSON.parse(wishlistStorage);
-        const wishlistIds = wishlistData.map(item => item.id);
-        setWishlistItems(wishlistIds);
-      }
-    };
-    loadWishlist();
+    const wishlistIds = getWishlistIds();
+    setWishlistItems(wishlistIds);
   }, []);
 
-  // Check if product is in wishlist
   const isInWishlist = (id) => {
     return wishlistItems.includes(id);
   };
 
-  const cartData = (id) => {
-    if (localStorage.getItem("name")) {
-      const existingData = JSON.parse(localStorage.getItem("name"));
-      const filter = existingData.filter((v) => v.id === id);
-      if (filter.length) {
-        filter[0].qty = filter[0]["qty"] + 1;
-        localStorage.setItem("name", JSON.stringify(existingData));
-        toggleCart();
-        alertSwal("success", "Product added to cart successfully");
-      } else {
-        const updatedData = [...existingData, { id: id, qty: 1 }];
-        localStorage.setItem("name", JSON.stringify(updatedData));
-        toggleCart();
-        alertSwal("success", "Product added to cart successfully");
-      }
-    } else {
-      const existingData = [];
-      const updatedData = [...existingData, { id: id, qty: 1 }];
-      localStorage.setItem("name", JSON.stringify(updatedData));
+  const handleAddToCart = (productId) => {
+    const result = addToCart(productId);
+    
+    if (result.success) {
       toggleCart();
-      alertSwal("success", "Product added to cart successfully");
+      alertSwal("success", result.message);
+    } else {
+      alertSwal("error", result.message);
     }
   };
 
-  const wishlistData = (id) => {
-    const wishlistStorage = localStorage.getItem("wishlist");
-
-    if (wishlistStorage) {
-      const existingData = JSON.parse(wishlistStorage);
-      const filter = existingData.filter((v) => v.id === id);
-
-      if (filter.length) {
-        const updatedData = existingData.filter((v) => v.id !== id);
-        localStorage.setItem("wishlist", JSON.stringify(updatedData));
-        setWishlistItems(updatedData.map(item => item.id));
-        toggleWishlist();
-        alertSwal("error", "Product removed from wishlist");
-      } else {
-        const updatedData = [...existingData, { id: id }];
-        localStorage.setItem("wishlist", JSON.stringify(updatedData));
-        setWishlistItems(updatedData.map(item => item.id));
-        toggleWishlist();
+  const handleWishlistToggle = (productId) => {
+    const result = toggleWishlistItem(productId);
+    
+    if (result.success) {
+      setWishlistItems(result.wishlistItems.map(item => item.id));
+      toggleWishlist();
+      
+      if (result.isAdded) {
         alertSwal("success", "Product added to wishlist successfully");
+      } else {
+        alertSwal("error", "Product removed from wishlist");
       }
     } else {
-      const updatedData = [{ id: id }];
-      localStorage.setItem("wishlist", JSON.stringify(updatedData));
-      setWishlistItems([id]);
-      toggleWishlist();
-      alertSwal("success", "Product added to wishlist successfully");
+      alertSwal("error", result.message);
     }
   };
 
@@ -143,7 +114,6 @@ const NewArival = () => {
               <ProductSkeleton key={id} />
             ))
           ) : (
-            // Show actual products
             products.map((product) => (
               <div key={product.id} className="h-auto w-full group shadow-md relative overflow-hidden rounded-md cursor-pointer transition-all duration-300">
                 <div className="relative w-full h-[200px] sm:h-[220px] lg:h-[256px] overflow-hidden">
@@ -151,7 +121,7 @@ const NewArival = () => {
 
                   {/* Hover Icons */}
                   <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                    <button onClick={() => wishlistData(product.id)} className={`${isInWishlist(product.id) ? 'bg-red-500' : 'bg-white hover:bg-red-500'} cursor-pointer p-2 rounded-full shadow opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 group`}>
+                    <button onClick={() => handleWishlistToggle(product.id)} className={`${isInWishlist(product.id) ? 'bg-red-500' : 'bg-white hover:bg-red-500'} cursor-pointer p-2 rounded-full shadow opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 group`}>
                       <Heart size={18} className={`${isInWishlist(product.id) ? 'text-white bg-red-500 fill-current' : 'group-hover:text-red-500 '}`} />
                     </button>
                     <button className="bg-white hover:bg-gray-700 cursor-pointer p-2 rounded-full shadow opacity-0 translate-y-3 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
@@ -160,7 +130,7 @@ const NewArival = () => {
                   </div>
 
                   {/* Cart Button */}
-                  <div onClick={() => cartData(product.id)} className="absolute bg-blue-600 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                  <div onClick={() => handleAddToCart(product.id)} className="absolute bg-blue-600 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                     <button className="bg-black text-white p-2 rounded-full shadow cursor-pointer">
                       <ShoppingCart size={20} />
                     </button>

@@ -8,8 +8,12 @@ import useStoreData from "@/app/lib/useStoreData";
 import ProductGridSkeleton from "@/app/.component/ProductGridSkeleton";
 import Swal from 'sweetalert2';
 
+// Import utility functions
+import { addToCart, isInCart as checkInCart } from '@/app/lib/cartUtils';
+import { toggleWishlist as toggleWishlistItem, isInWishlist as checkInWishlist, getWishlistIds } from '@/app/lib/wishlistUtils';
+
 const Products = () => {
-  const { showProduct, setShowProduct, select, setSelect, minVal, maxVal, toggleCart, toggleWishlist } = useStoreData();
+  const { showProduct, setShowProduct, setSelect, minVal, maxVal, toggleCart, toggleWishlist } = useStoreData();
   const [products, setProducts] = useState([]);
   const [totalProducts, setTotalProducts] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -19,99 +23,43 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [apiPricesFetched, setApiPricesFetched] = useState(false);
 
-  // Load wishlist from localStorage on mount
-  useEffect(() => {
-    const loadWishlist = () => {
-      const wishlistStorage = localStorage.getItem("wishlist");
-      if (wishlistStorage) {
-        const wishlistData = JSON.parse(wishlistStorage);
-        const wishlistIds = wishlistData.map(item => item.id);
-        setWishlistItems(wishlistIds);
-      }
-    };
-    loadWishlist();
-  }, []);
-
-  // Check if product is in wishlist
-  const isInWishlist = (id) => {
-    return wishlistItems.includes(id);
-  };
-
   const alertSwal = (icons, data) => {
     const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      timer: 1500,
-      timerProgressBar: true,
-      showConfirmButton: false,
+      toast: true, position: "top-end", timer: 1500, timerProgressBar: true, showConfirmButton: false,
     });
-    Toast.fire({
-      icon: icons,
-      title: data,
-    });
+    Toast.fire({ icon: icons, title: data });
   };
 
-  const cartData = (id) => {
-    if (localStorage.getItem("name")) {
-      const existingData = JSON.parse(localStorage.getItem("name"));
-      const filter = existingData.filter((v) => v.id === id);
-      if (filter.length) {
-        filter[0].qty = filter[0]["qty"] + 1;
-        localStorage.setItem("name", JSON.stringify(existingData));
-        toggleCart();
-        alertSwal("success", "Product added to cart successfully");
-      } else {
-        const updatedData = [...existingData, { id: id, qty: 1 }];
-        localStorage.setItem("name", JSON.stringify(updatedData));
-        toggleCart();
-        alertSwal("success", "Product added to cart successfully");
-      }
-    } else {
-      const existingData = [];
-      const updatedData = [...existingData, { id: id, qty: 1 }];
-      localStorage.setItem("name", JSON.stringify(updatedData));
-      toggleCart();
-      alertSwal("success", "Product added to cart successfully");
-    }
-  };
-
-  const wishlistData = (id) => {
-    const wishlistStorage = localStorage.getItem("wishlist");
-
-    if (wishlistStorage) {
-      const existingData = JSON.parse(wishlistStorage);
-      const filter = existingData.filter((v) => v.id === id);
-
-      if (filter.length) {
-        // Product exists in wishlist, remove it
-        const updatedData = existingData.filter((v) => v.id !== id);
-        localStorage.setItem("wishlist", JSON.stringify(updatedData));
-        setWishlistItems(updatedData.map(item => item.id));
-        toggleWishlist();
-        alertSwal("error", "Product removed from wishlist");
-      } else {
-        // Product doesn't exist, add it
-        const updatedData = [...existingData, { id: id }];
-        localStorage.setItem("wishlist", JSON.stringify(updatedData));
-        setWishlistItems(updatedData.map(item => item.id));
-        toggleWishlist();
-        alertSwal("success", "Product added to wishlist successfully");
-      }
-    } else {
-      // No wishlist exists, create new one
-      const updatedData = [{ id: id }];
-      localStorage.setItem("wishlist", JSON.stringify(updatedData));
-      setWishlistItems([id]);
-      toggleWishlist();
-      alertSwal("success", "Product added to wishlist successfully");
-    }
-  };
-
-  // Wait for minVal/maxVal to be set from API
   useEffect(() => {
-    if (minVal !== 0 || maxVal !== 100000) {
-      setApiPricesFetched(true);
+    const wishlistIds = getWishlistIds();
+    setWishlistItems(wishlistIds);
+  }, []);
+
+  const isInWishlist = (id) => wishlistItems.includes(id);
+
+  const handleAddToCart = (productId) => {
+    const result = addToCart(productId);
+    if (result.success) {
+      toggleCart();
+      alertSwal("success", result.message);
+    } else {
+      alertSwal("error", result.message);
     }
+  };
+
+  const handleWishlistToggle = (productId) => {
+    const result = toggleWishlistItem(productId);
+    if (result.success) {
+      setWishlistItems(result.wishlistItems.map(item => item.id));
+      toggleWishlist();
+      alertSwal(result.isAdded ? "success" : "error", result.isAdded ? "Product added to wishlist successfully" : "Product removed from wishlist");
+    } else {
+      alertSwal("error", result.message);
+    }
+  };
+
+  useEffect(() => {
+    if (minVal !== 0 || maxVal !== 100000) setApiPricesFetched(true);
   }, [minVal, maxVal]);
 
   useEffect(() => {
@@ -146,6 +94,7 @@ const Products = () => {
     <div className='flex flex-col'>
       <div className='my-1 py-1 grid grid-cols-1 md:grid-cols-2 items-center gap-4'>
         <p className='text-gray-800 text-[15px] md:ml-9 hidden lg:block'>Showing 1-{Math.min(showProduct, totalProducts)} of {totalProducts} results</p>
+
         <div className='flex items-center justify-end gap-2 md:gap-4 mx-2'>
           <p className='[&>*]:p-1 gap-2 flex items-center justify-center text-sm md:text-base'>
             Show
@@ -162,7 +111,7 @@ const Products = () => {
               <option value="price,desc">Price: high to low</option>
               <option value="price,asc">Price: low to high</option>
             </select>
-            <ChevronDown className="absolute right-3 text-gray-500 pointer-events-none group-hover:text-blue-500 transition duration-200" />
+            <ChevronDown className="absolute right-3 text-gray-500 pointer-events-none transition duration-200" />
           </div>
 
           <div onClick={() => setChangeDiv(false)} className={`hidden md:block ${changeDiv ? "border-gray-200" : "bg-blue-500 stroke-white border-blue-500"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
@@ -173,6 +122,7 @@ const Products = () => {
               <path d="M25 26H1V47H25V26Z" strokeWidth="3" />
             </svg>
           </div>
+
           <div onClick={() => setChangeDiv(true)} className={`hidden md:block ${changeDiv ? "bg-blue-500 stroke-white border-blue-500" : "border-gray-200"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
             <svg width="30" height="20" viewBox="0 0 50 48" fill="none">
               <path d="M19 1H1V17H19V1Z" strokeWidth="3" />
@@ -187,20 +137,22 @@ const Products = () => {
       <div className={`${changeDiv ? "hidden md:grid md:grid-cols-1 my-1" : "grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 lg:gap-8 my-6"} mx-2 md:mx-4`}>
         {products.map(value => (
           <div key={value.id} className={`${changeDiv ? "grid grid-cols-[30%_auto] gap-4 my-3 h-[250px] md:h-[300px]" : "h-[300px] md:h-[400px] w-full"} group relative overflow-hidden rounded-md cursor-pointer transition-all duration-300 hover:shadow-sm`}>
+            
             <div className={`${changeDiv ? "flex items-center justify-center h-full" : "relative h-[60%] md:h-[70%]"} w-full overflow-hidden`}>
               <Image onClick={() => router.push(`/product/${value.slug}`)} unoptimized src={value.images[0]?.src || "/image1.jpg"} alt={value.images[0]?.alt || "products image"} priority width={256} height={0} className={`${changeDiv ? "rounded-2xl" : ""} object-cover w-full h-full group-hover:scale-105 transition-transform duration-500`} />
 
               <div className={`${changeDiv ? "hidden md:flex" : "flex"} absolute top-3 right-3 flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500`}>
-                <button onClick={() => wishlistData(value.id)} className={`${isInWishlist(value.id) ? 'bg-red-500' : 'bg-white hover:bg-red-500'} cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300 group/heart`} aria-label="Add to wishlist">
-                  <Heart size={18} className={`${isInWishlist(value.id) ? 'text-white fill-current' : 'text-red-500 group-hover/heart:text-white'} transition-colors`} />
+                <button onClick={() => handleWishlistToggle(value.id)} className={`${isInWishlist(value.id) ? 'bg-red-500' : 'bg-white hover:bg-red-500'} cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300`} aria-label="Add to wishlist">
+                  <Heart size={18} className={`${isInWishlist(value.id) ? 'text-white bg-red-500 fill-current' : 'group-hover:text-red-500'} transition-colors`} />
                 </button>
+
                 <button className="bg-white hover:bg-gray-700 cursor-pointer p-2.5 rounded-full shadow-md transform hover:scale-105 transition-all duration-300" aria-label="Quick view">
                   <Search size={18} className="text-gray-700 hover:text-white transition-colors" />
                 </button>
               </div>
 
-              <div onClick={toggleCart} className={`${changeDiv ? "hidden md:block" : "block"} absolute bg-white hover:bg-blue-400 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-200`}>
-                <button className="bg-black hover:bg-gray-900 text-white p-2 rounded-full shadow cursor-pointer transition-colors" onClick={() => cartData(value.id)} aria-label="Add to cart">
+              <div className={`${changeDiv ? "hidden md:block" : "block"} absolute bg-white hover:bg-blue-400 rounded-tl-2xl bottom-0 p-2 pb-3 right-0 pr-3 opacity-0 translate-y-5 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500 delay-200`}>
+                <button className="bg-black hover:bg-gray-900 text-white p-2 rounded-full shadow cursor-pointer transition-colors" onClick={(e) => { e.stopPropagation(); handleAddToCart(value.id); }} aria-label="Add to cart">
                   <ShoppingCart size={18} />
                 </button>
               </div>
@@ -208,14 +160,16 @@ const Products = () => {
 
             <div className={`${changeDiv ? "flex flex-col justify-center" : ""} px-2 py-2 md:py-4`}>
               <h3 className={`${changeDiv ? "text-sm md:text-lg" : "text-sm md:text-lg"} font-semibold text-gray-700 leading-normal hover:text-blue-500 transition-colors line-clamp-2 cursor-pointer`}>{value.name || "Products"}</h3>
+
               <p className={`${changeDiv ? "text-xs md:text-base" : "text-xs md:text-base"} text-gray-600 font-medium mt-1`}>RS {value.price || "0"}</p>
 
               {changeDiv && (
-                <button onClick={(e) => { e.stopPropagation(); toggleCart(); cartData(value.id); }} className="md:hidden mt-3 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-colors">
+                <button onClick={(e) => { e.stopPropagation(); handleAddToCart(value.id); }} className="md:hidden mt-3 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-colors">
                   <ShoppingCart size={16} /> Add to Cart
                 </button>
               )}
             </div>
+
           </div>
         ))}
       </div>

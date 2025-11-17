@@ -7,6 +7,7 @@ import CartSkeleton from "./Skeleton";
 import api from "@/app/lib/api";
 import Link from "next/link";
 import Image from "next/image";
+import { getCartItems, removeFromCart, updateCartQuantity } from "@/app/lib/cartUtils";
 
 const Page = () => {
   const { cart, toggleCart } = useStoreData();
@@ -30,70 +31,57 @@ const Page = () => {
       }
     };
 
-    const storageData = localStorage.getItem("name");
-    if (storageData) {
-      const jsonObject = JSON.parse(storageData);
-      const idData = jsonObject.map((v) => v.id);
-      if (!idData.length) {
-        setEmptyCart(true);
-        setLoading(false);
-        return;
-      }
-
-      const string = idData.join(",");
-      getData(string);
-    } else {
+    const cartItems = getCartItems();
+    
+    if (cartItems.length === 0) {
       setEmptyCart(true);
       setLoading(false);
+      return;
     }
+
+    const idData = cartItems.map((v) => v.id);
+    const string = idData.join(",");
+    getData(string);
   }, [cart]);
 
   useEffect(() => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData || data.length === 0) return;
-
-    const jsonObject = JSON.parse(storageData);
+    const cartItems = getCartItems();
+    
+    if (cartItems.length === 0 || data.length === 0) {
+      setValue([]);
+      setTotalPrice(0);
+      return;
+    }
 
     const merged = data.map((item) => {
-      const match = jsonObject.find((q) => q.id === item.id);
-      return { ...item, ...match };
+      const match = cartItems.find((q) => q.id === item.id);
+      return { ...item, qty: match?.qty || 1 };
     });
 
     const total = merged.reduce(
-      (sum, item) => sum + Number(item.price) * Number(item.qty),
+      (sum, item) => sum + Number(item.price) * Number(item.qty || 1),
       0
     );
 
     setTotalPrice(total);
     setValue(merged);
-  }, [data]);
+  }, [data, cart]);
 
-  const changeQuantity = (quantity, id) => {
-    if (localStorage.getItem("name")) {
-      const existingData = JSON.parse(localStorage.getItem("name"));
-      const updatedData = existingData.map((item) =>
-        item.id === id ? { ...item, qty: quantity } : item
-      );
-      localStorage.setItem("name", JSON.stringify(updatedData));
+  const handleQuantityChange = (quantity, id) => {
+    const qty = parseInt(quantity);
+    if (qty > 0) {
+      updateCartQuantity(id, qty);
+      toggleCart();
     }
+  };
+
+  const handleRemove = (id) => {
+    removeFromCart(id);
     toggleCart();
   };
 
-  const remove = (id) => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData) return;
-
-    const jsonObject = JSON.parse(storageData);
-    const filtered = jsonObject.filter((val) => val.id !== id);
-    localStorage.setItem("name", JSON.stringify(filtered));
-    
-    toggleCart();
-  };
-
-  // Loading State
   if (loading) return <CartSkeleton />;
 
-  // Empty Cart UI
   if (emptyCart) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -140,7 +128,6 @@ const Page = () => {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Cart Items Section */}
@@ -159,6 +146,7 @@ const Page = () => {
               {value.map((item, id) => (
                 <div key={id} className="bg-white rounded-lg lg:rounded-t-none lg:rounded-b-lg shadow-sm border border-gray-200 lg:border-t-0">
                   <div className="p-4 sm:p-5 lg:p-6">
+                    {/* Mobile/Tablet Layout */}
                     <div className="lg:hidden space-y-4">
                       <div className="flex gap-3 sm:gap-4">
                         <Image src={item?.images[0]?.src || "image1.jpg"} alt={item?.name} width={80} height={80} className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0" />
@@ -176,23 +164,24 @@ const Page = () => {
                       <div className="flex items-center justify-between gap-4 pt-3 border-t">
                         <div className="flex items-center gap-3">
                           <span className="text-sm text-gray-600">Qty:</span>
-                          <input type="number" value={item.qty} onChange={(e) => changeQuantity(e.target.value, item.id)} className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" min="1" />
+                          <input type="number" value={item.qty || 1} onChange={(e) => handleQuantityChange(e.target.value, item.id)} className="w-16 sm:w-20 px-2 sm:px-3 py-1.5 sm:py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" min="1" />
                         </div>
                         
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="text-xs text-gray-500">Subtotal</p>
                             <p className="text-lg sm:text-xl font-bold text-gray-900">
-                              Rs {item.price * item.qty}
+                              Rs {(item.price || 0) * (item.qty || 1)}
                             </p>
                           </div>
-                          <button onClick={() => remove(item.id)} className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                          <button onClick={() => handleRemove(item.id)} className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                             <Trash2 className="w-5 h-5 sm:w-6 sm:h-6" />
                           </button>
                         </div>
                       </div>
                     </div>
 
+                    {/* Desktop Layout */}
                     <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
                       <div className="col-span-5 flex gap-4">
                         <Image src={item?.images[0]?.src || "image1.jpg"} alt={item?.name} width={96} height={96} className="w-24 h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0" />
@@ -208,17 +197,17 @@ const Page = () => {
                       </div>
 
                       <div className="col-span-2 flex justify-center">
-                        <input type="number" value={item.qty} onChange={(e) => changeQuantity(e.target.value, item.id)} className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500" min="1" />
+                        <input type="number" value={item.qty || 1} onChange={(e) => handleQuantityChange(e.target.value, item.id)} className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500" min="1" />
                       </div>
 
                       <div className="col-span-2 text-center">
                         <span className="font-bold text-gray-900 text-lg">
-                          Rs {item.price * item.qty}
+                          Rs {(item.price || 0) * (item.qty || 1)}
                         </span>
                       </div>
 
                       <div className="col-span-1 flex justify-center">
-                        <button onClick={() => remove(item.id)} className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                        <button onClick={() => handleRemove(item.id)} className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                           <Trash2 className="w-6 h-6" />
                         </button>
                       </div>
@@ -229,6 +218,7 @@ const Page = () => {
             </div>
           </div>
 
+          {/* Cart Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 sm:p-6 lg:sticky lg:top-6">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">

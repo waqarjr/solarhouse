@@ -7,14 +7,16 @@ import useStoreData from '@/app/lib/useStoreData';
 import WishlistSkeleton from "./WishlistSkeleton ";
 import api from '@/app/lib/api';
 import Swal from 'sweetalert2';
+import { getWishlistItems, removeFromWishlist as removeFromWishlistUtil } from '@/app/lib/wishlistUtils';
+import { addToCart as addToCartUtil } from '@/app/lib/cartUtils';
 
 const WishlistPage = () => {
   const { wishlist, toggleWishlist, toggleCart } = useStoreData();
-  const [wish , setWish] = useState([]);
+  const [wish, setWish] = useState([]);
   const [emptyWishlist, setEmptyWishlist] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const alertSwal = ()=>{
+  const alertSwal = (icons, message) => {
     const Toast = Swal.mixin({
       toast: true,
       position: "top-end",
@@ -23,11 +25,10 @@ const WishlistPage = () => {
       showConfirmButton: false,
     });
     Toast.fire({
-      icon: `success`,
-      title: `product added to cart successfully`,
+      icon: icons,
+      title: message,
     });
-  }
-
+  };
 
   useEffect(() => {
     const getData = async (string) => {
@@ -42,61 +43,55 @@ const WishlistPage = () => {
       }
     };
 
-    const storageData = localStorage.getItem("wishlist");
-    console.log(storageData);
-    if (storageData) {
-      const jsonObject = JSON.parse(storageData);
-      const idData = jsonObject.map((v) => v.id);
-      if (!idData.length) {
-        setEmptyWishlist(true);
-        setLoading(false);
-        return;
-      }
-
-      const string = idData.join(",");
-      getData(string);
-    } else {
+    const wishlistItems = getWishlistItems();
+    
+    if (wishlistItems.length === 0) {
       setEmptyWishlist(true);
       setLoading(false);
+      return;
     }
+
+    const idData = wishlistItems.map((v) => v.id);
+    const string = idData.join(",");
+    getData(string);
   }, [wishlist]);
 
-  const removeFromWishlist = (id) => {
-    const existingData = JSON.parse(localStorage.getItem("wishlist"));
-    const filter = existingData.filter((v) => v.id !== id);
-    localStorage.setItem("wishlist", JSON.stringify(filter));
-    setWish(filter);
-    toggleWishlist();
-  };
-
-
-  const addToCart = (id) => {
-    // Add to cart logic
-    if (localStorage.getItem("name")) {
-      const existingData = JSON.parse(localStorage.getItem("name"));
-      const filter = existingData.filter((v) => v.id === id);
-      if (filter.length) {
-        filter[0].qty = filter[0]["qty"] + 1;
-        localStorage.setItem("name", JSON.stringify(existingData));
-        removeFromWishlist(id);
-        toggleCart();
-        alertSwal();
-      } else {
-        const updatedData = [...existingData, { id: id, qty: 1 }];
-        localStorage.setItem("name", JSON.stringify(updatedData));
-        removeFromWishlist(id);
-        toggleCart();
-        alertSwal();
+  const handleRemoveFromWishlist = (id) => {
+    const result = removeFromWishlistUtil(id);
+    
+    if (result.success) {
+      toggleWishlist();
+      alertSwal("error", "Product removed from wishlist");
+      
+      if (result.wishlistItems.length === 0) {
+        setWish([]);
+        setEmptyWishlist(true);
       }
     } else {
-      const existingData = [];
-      const updatedData = [...existingData, { id: id, qty: 1 }];
-      localStorage.setItem("name", JSON.stringify(updatedData));
-      removeFromWishlist(id);
-      toggleCart();
-      alertSwal();
+      alertSwal("error", result.message);
     }
+  };
 
+  const handleAddToCart = (id) => {
+    const cartResult = addToCartUtil(id);
+    
+    if (cartResult.success) {
+      // Remove from wishlist after adding to cart
+      const wishlistResult = removeFromWishlistUtil(id);
+      
+      if (wishlistResult.success) {
+        toggleCart();
+        toggleWishlist();
+        alertSwal("success", "Product added to cart successfully");
+        
+        if (wishlistResult.wishlistItems.length === 0) {
+          setWish([]);
+          setEmptyWishlist(true);
+        }
+      }
+    } else {
+      alertSwal("error", cartResult.message);
+    }
   };
 
   if (loading) {
@@ -184,12 +179,12 @@ const WishlistPage = () => {
 
                     {/* Actions */}
                     <div className="flex items-center justify-between gap-3 pt-3 border-t">
-                      <button   onClick={() => addToCart(item.id)}  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base">
+                      <button onClick={() => handleAddToCart(item.id)} className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2.5 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 text-sm sm:text-base">
                         <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                         Add to Cart
                       </button>
                       
-                      <button onClick={() => removeFromWishlist(item.id)}  className="text-red-600 hover:text-red-700 p-2.5 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                      <button onClick={() => handleRemoveFromWishlist(item.id)} className="text-red-600 hover:text-red-700 p-2.5 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                         <Trash2 className="w-5 h-5 sm:w-6 sm:h-6" />
                       </button>
                     </div>
@@ -198,8 +193,8 @@ const WishlistPage = () => {
                   {/* Desktop Layout */}
                   <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
                     <div className="col-span-6 flex gap-4">
-                      <Image  src={item?.images?.[0]?.src || "/placeholder.jpg"} alt={item?.name || "Product"} 
-                        width={96}  height={96}  className="w-24 h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0"  />
+                      <Image src={item?.images?.[0]?.src || "/placeholder.jpg"} alt={item?.name || "Product"} 
+                        width={96} height={96} className="w-24 h-24 object-cover rounded-lg bg-gray-100 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-gray-900 text-base line-clamp-2">
                           {item.name}
@@ -212,7 +207,7 @@ const WishlistPage = () => {
                     </div>
 
                     <div className="col-span-2 flex justify-center">
-                      <button  onClick={() => addToCart(item.id)} 
+                      <button onClick={() => handleAddToCart(item.id)} 
                         className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-6 py-2.5 rounded-lg transition-colors duration-200 flex items-center gap-2">
                         <ShoppingCart className="w-5 h-5" />
                         Add to Cart
@@ -220,7 +215,7 @@ const WishlistPage = () => {
                     </div>
 
                     <div className="col-span-1 flex justify-center">
-                      <button onClick={() => removeFromWishlist(item.id)} 
+                      <button onClick={() => handleRemoveFromWishlist(item.id)} 
                         className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
                         <Trash2 className="w-6 h-6" />
                       </button>

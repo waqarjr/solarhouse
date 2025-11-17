@@ -1,11 +1,13 @@
 'use client'
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { X, ShoppingBag } from "lucide-react";
 import useStoreData from "@/app/lib/useStoreData";
 import { useRouter } from "next/navigation";
 import api from "../lib/api";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import { getCartItems, removeFromCart } from "@/app/lib/cartUtils";
+
 const Cart = () => {
   const [openCart, setOpenCart] = useState(false);
   const { cart, toggleCart } = useStoreData();
@@ -13,60 +15,57 @@ const Cart = () => {
   const [value, setValue] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const router = useRouter();
-  const isInitialMount = useRef(true);
-  const lastAction = useRef(null);
 
-  const getData = async (string, showAlert = false) => {
+  const alertSwal = (icons, data) => {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      timer: 1500,
+      timerProgressBar: true,
+      showConfirmButton: false,
+    });
+    Toast.fire({
+      icon: icons,
+      title: data,
+    });
+  };
+
+  const getData = async (string) => {
     if (!string) return;
     try {
       const response = await api.get(`/products?include=${string}`);
       setData(response.data);
-
     } catch (e) {
       console.log(e.message);
     }
   };
 
   useEffect(() => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData) {
-      setData([]);
-      return;
-    }
-
-    const jsonObject = JSON.parse(storageData);
-    const idData = jsonObject.map((v) => v.id);
-
-    if (idData.length === 0) {
+    const cartItems = getCartItems();
+    
+    if (cartItems.length === 0) {
       setData([]);
       setOpenCart(false);
       return;
     }
 
+    const idData = cartItems.map((v) => v.id);
     const string = idData.join(",");
-    
-    // On initial mount, don't show alert
-    if (isInitialMount.current) {
-      getData(string, false);
-      isInitialMount.current = false;
-    } else {
-      // On subsequent changes, show alert only if it was an add action
-      getData(string, true);
-    }
+    getData(string);
   }, [cart]);
 
   useEffect(() => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData || data.length === 0) {
+    const cartItems = getCartItems();
+    
+    if (cartItems.length === 0 || data.length === 0) {
       setValue([]);
       setTotalPrice(0);
       setOpenCart(false);
       return;
     }
 
-    const jsonObject = JSON.parse(storageData);
     const merged = data.map((item) => {
-      const match = jsonObject.find((q) => q.id === item.id);
+      const match = cartItems.find((q) => q.id === item.id);
       return { ...item, ...match };
     });
 
@@ -79,49 +78,23 @@ const Cart = () => {
     setValue(merged);
   }, [data]);
 
-  const remove = (id) => {
-    const storageData = localStorage.getItem("name");
-    if (!storageData) return;
-
-    const jsonObject = JSON.parse(storageData);
-    const fil = jsonObject.filter((val) => val.id !== id);
-    localStorage.setItem("name", JSON.stringify(fil));
+  const handleRemove = (id) => {
+    const result = removeFromCart(id);
     
-    lastAction.current = 'remove';
-    toggleCart();
-
-    if (fil.length === 0) {
-      setData([]);
-      setValue([]);
-      setTotalPrice(0);
-      setOpenCart(false);
-    }
-
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end",
-      timer: 1500,
-      timerProgressBar: true,
-      showConfirmButton: false,
-    });
-    Toast.fire({
-      icon: "error",
-      title: "Product removed successfully",
-    });
-  };
-
-  // Track when products are added (call this from your add to cart functions)
-  useEffect(() => {
-    // Listen for storage events from other components
-    const handleStorageChange = (e) => {
-      if (e.key === 'cart-action') {
-        lastAction.current = e.newValue;
+    if (result.success) {
+      toggleCart();
+      alertSwal("error", "Product removed successfully");
+      
+      if (result.cartItems.length === 0) {
+        setData([]);
+        setValue([]);
+        setTotalPrice(0);
+        setOpenCart(false);
       }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    } else {
+      alertSwal("error", result.message);
+    }
+  };
 
   if (data.length === 0) {
     return (
@@ -180,7 +153,7 @@ const Cart = () => {
                         </span>
                       </p>
                     </div>
-                    <button onClick={() => remove(item.id)} className="opacity-0 group-hover:opacity-100 w-6 h-6 text-red-500 hover:bg-red-100 rounded-full p-1 transition">
+                    <button onClick={() => handleRemove(item.id)} className="opacity-0 group-hover:opacity-100 w-6 h-6 text-red-500 hover:bg-red-100 rounded-full p-1 transition">
                       <X className="w-4 h-4" />
                     </button>
                   </div>

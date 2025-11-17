@@ -1,38 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SolarHouse
 
-## Getting Started
+[View Live Site](https://solarhouse.vercel.app)  
+[GitHub Repository](https://github.com/waqarjr/solarhouse)
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+**SolarHouse** is a web-based application designed to help users explore and interact with information related to solar houses, focusing on sustainability and efficient energy management. Built primarily using **JavaScript**, SolarHouse leverages modern web technologies to deliver an engaging user experience.
+
+## Features
+
+- Interactive data and content about solar houses
+- Sustainable energy tips and resources
+- Responsive and modern user interface
+- Built using a modular structure for easy scalability and maintenance
+
+## Technology Stack
+
+- **Language:** JavaScript
+- **Framework:** Uses Next.js conventions (based on config files and directory structure)
+- **Frontend tooling:** PostCSS, ESLint
+- **Build Tooling:** jsconfig, next.config
+
+## Project Structure
+
 ```
+solarhouse/
+├── .gitignore
+├── README.md
+├── eslint.config.mjs
+├── jsconfig.json
+├── next.config.mjs
+├── package-lock.json
+├── package.json
+├── postcss.config.mjs
+├── public/
+├── src/
+│   ├── app/
+│   └── middleware.js
+```
+- `src/app/`: Main application directory (routes/components)
+- `src/middleware.js`: Middleware configuration for requests
+- `public/`: Static files, images, assets
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Installation
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/waqarjr/solarhouse.git
+   cd solarhouse
+   ```
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+4. **Open your browser** at `http://localhost:3000` to see SolarHouse in action.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Usage
 
-## Learn More
+- Explore features via the web interface
+- Modify or extend components in the `src/app` folder
+- Middleware logic can be customized in `src/middleware.js`
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Contributions are welcome! Please fork the repository, make your changes, and submit a pull request.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+This project currently does not specify a license. Please consult the repository owner for usage and redistribution permissions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Author
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-# solarhouse
+- Developed and maintained by [waqarjr](https://github.com/waqarjr)

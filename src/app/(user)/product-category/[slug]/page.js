@@ -14,45 +14,39 @@ const Page =   ({params}) => {
   const newHero = `/shop/${slug}` 
 
   if(slug === 'solar-panels' || slug === 'va-protectors') {
-    return(<>
-    <HeroSection url={newHero} />
-<section className="grid grid-cols-[20%_auto]  max-w-7xl mx-auto  bg-gradient-to-b from-secondary to-white px-6 text-center my-5">
-  
-  <div className="hidden lg:grid [&>*]:border-gray-100 ">
-    <div className="grid my-1 py-2 border-b-2 cursor-pointer">
-      <div className="flex items-center justify-between">
-        <p className="font-semibold text-[20px] text-gray-900">Category</p>
-        <ChevronDown className="text-[14px] text-gray-400 transition-all duration-150" />
-      </div>
-    </div>
+    return(
+      <>
+        <HeroSection url={newHero} />
+        <section className="max-w-7xl mx-auto bg-gradient-to-b from-secondary to-white px-4 sm:px-6 lg:px-8 my-5">
+          <div className="grid gap-6 lg:grid-cols-[25%_auto] items-stretch">
+            <div className="rounded-2xl hidden lg:block p-4 sm:p-6 flex flex-col gap-4">
+              {["Category", "Price", "Tag"].map((label) => (
+                <div key={label} className="border-b border-gray-700 last:border-b-0 pb-3">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-base sm:text-lg text-gray-900">{label}</p>
+                    <ChevronDown className="text-gray-400" size={18} />
+                  </div>
+                </div>
+              ))}
+            </div>
 
-    <div className="grid my-1 py-2 border-b-2 cursor-pointer">
-      <div className="flex items-center justify-between">
-        <p className="font-semibold text-[20px] text-gray-900">Price</p>
-        <ChevronDown className="text-[14px] text-gray-400 transition-all duration-150" />
-      </div>
-    </div>
-
-    <div className="grid my-1 py-2 border-b-2 cursor-pointer">
-      <div className="flex items-center justify-between">
-        <p className="font-semibold text-[20px] text-gray-900">Tag</p>
-        <ChevronDown className="text-[14px] text-gray-400 transition-all duration-150" />
-      </div>
-    </div>
-  </div>
-
-  <div className="bg-white  rounded-2xl p-10 max-w-lg w-full border border-gray-100 mx-auto">
-    <div className="flex flex-col items-center gap-4">
-
-      <h1 className="text-3xl font-bold text-primary">No Products Found</h1>
-      <p className="text-gray-600 text-lg">Sorry, we couldn&apos;t find any products matching your selection.</p>
-
-      <a href="/shop" className="mt-6 inline-block bg-primary text-black px-6 py-3 rounded-full font-medium shadow hover:bg-primary/90 transition-all duration-300">Back to Shop</a>
-    </div>
-  </div>
-</section>
-
-    </>)
+            <div className=" p-6 sm:p-8 lg:p-10  flex flex-col items-center text-center gap-4">
+              <div className="p-3 sm:p-4 rounded-full bg-blue-50 w-fit">
+                <ChevronDown size={28} className="text-blue-500 rotate-90" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-primary">No Products Found</h1>
+              <p className="text-gray-600 text-base sm:text-lg">Sorry, we couldn&apos;t find any products matching your selection.</p>
+              <a
+                href="/shop"
+                className="mt-2 inline-flex items-center gap-2 bg-primary text-black px-6 py-3 rounded-full font-medium shadow hover:bg-primary/90 transition-all duration-300"
+              >
+                Back to Shop
+              </a>
+            </div>
+          </div>
+        </section>
+      </>
+    )
   }
 
   return (

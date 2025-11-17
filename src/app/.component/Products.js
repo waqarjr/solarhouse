@@ -169,7 +169,7 @@ const Products = ({ source = SOURCE_TYPES.SHOP, slug = null }) => {
       <div className='my-1 py-1 grid grid-cols-1 md:grid-cols-2 items-center gap-4'>
         <p className='text-gray-800 text-[15px] md:ml-9 hidden lg:block'>Showing 1-{Math.min(showProduct, totalProducts)} of {totalProducts} results</p>
 
-        <div className='flex items-center justify-end gap-2 md:gap-4 mx-2'>
+        <div className='flex items-center justify-end  lg:mx-0 gap-2 md:gap-4 mx-2 '>
           <p className='[&>*]:p-1 gap-2 flex items-center justify-center text-sm md:text-base'>
             Show
             <span className={`${showProduct === "12" ? "border-black border-b-2" : ""} cursor-pointer hover:text-blue-500`} onClick={() => setShowProduct("12")}>12</span>
@@ -188,7 +188,7 @@ const Products = ({ source = SOURCE_TYPES.SHOP, slug = null }) => {
             <ChevronDown className="absolute right-3 text-gray-500 pointer-events-none transition duration-200" />
           </div>
 
-          <div onClick={() => setChangeDiv(false)} className={`hidden md:block ${changeDiv ? "border-gray-200" : "bg-blue-500 stroke-white border-blue-500"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
+          <div onClick={() => setChangeDiv(false)} className={`hidden lg:block ${changeDiv ? "border-gray-200" : "bg-blue-500 stroke-white border-blue-500"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
             <svg width="30" height="20" viewBox="0 0 50 48" fill="none">
               <path d="M25 1H1V22H25V1Z" strokeWidth="3" />
               <path d="M52 1H28V22H52V1Z" strokeWidth="3" />
@@ -197,7 +197,7 @@ const Products = ({ source = SOURCE_TYPES.SHOP, slug = null }) => {
             </svg>
           </div>
 
-          <div onClick={() => setChangeDiv(true)} className={`hidden md:block ${changeDiv ? "bg-blue-500 stroke-white border-blue-500" : "border-gray-200"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
+          <div onClick={() => setChangeDiv(true)} className={`hidden lg:block ${changeDiv ? "bg-blue-500 stroke-white border-blue-500" : "border-gray-200"} px-2 py-3 rounded-full border-1 stroke-black hover:cursor-pointer`}>
             <svg width="30" height="20" viewBox="0 0 50 48" fill="none">
               <path d="M19 1H1V17H19V1Z" strokeWidth="3" />
               <path d="M19 23H1V39H19V23Z" strokeWidth="3" />

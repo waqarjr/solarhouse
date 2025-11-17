@@ -116,8 +116,8 @@ const Header = () => {
                                 )
                             })}
                         </ul>
-                        <div className='mt-4 pt-4 border-t border-gray-200 flex gap-2' onClick={() => setIsMobileMenuOpen(false)}>
-                           <Link href='/my-account' ><Account/>My Account</Link> 
+                        <div className='mt-4 pt-4 border-t border-gray-200 font-semibold block px-4 py-3' onClick={() => setIsMobileMenuOpen(false)}>
+                           <Link href='/my-account' ><p>My Account</p></Link> 
                         </div>
                     </nav>
                 </div>

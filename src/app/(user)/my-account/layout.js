@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 
 
 export default function Layout({ children }) {
-  const {valid, setUser, clearUser, } = useStoreData();
+  const {valid, user, setUser, clearUser, } = useStoreData();
   
   const [invalidLogin , setInvalidLogin] = useState(false);
   const [loading , setLoading] = useState(true);
@@ -45,9 +45,21 @@ const formik = useFormik({
   onSubmit: async (values)=>{
         try{ 
           setLoading(true);
-          const responce = await axios.post("/api/auth/login",values)
-          if(responce.data.valid) setUser(responce.data.message);
-          else clearUser();
+          const responce = await axios.post("/api/auth/login",values);
+          if(responce.data.valid) {
+            try{
+              const profileRes = await axios.post("/api/auth/verify");
+              if(profileRes.data.valid) setUser(profileRes.data.message);
+              else setUser(responce.data.message);
+              setInvalidLogin(false);
+            } catch {
+              setUser(responce.data.message);
+            }
+          }
+          else {
+            clearUser();
+            setInvalidLogin(true);
+          }
       }catch (e){
         console.log(e.message);
         setInvalidLogin(true);

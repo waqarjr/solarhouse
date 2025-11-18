@@ -32,7 +32,7 @@ const useStoreData = create((set) => ({
   user: null,
   valid: false,
   setUser: (userData) => set({ user: userData, valid: true }),
-  clearUser: () => set({ valid: false }),
+  clearUser: () => set({ user: null, valid: false }),
 }));
 
 export default useStoreData;

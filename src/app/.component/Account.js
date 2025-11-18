@@ -232,7 +232,7 @@ return (<>
           </form>
         </div>  
         <div>
-          <p className="text-black w-[150px] border-b-2 border-black mx-4 my-1" >Lost your password ?</p>
+          <Link href="/my-account/lost-password" className="text-black w-[150px] border-b-2 border-black mx-4 my-1" >Lost your password ?</Link>
           <p className="text-center text-black my-1">Not a member? 
           &nbsp;<span className="text-black border-b-2 border-black hover:cursor-pointer " onClick={()=>{setRegister(!register)}}  >Register</span>
           </p>

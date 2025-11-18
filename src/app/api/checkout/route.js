@@ -1,4 +1,6 @@
 import api from "@/app/lib/api";
+import axios from "axios";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -12,6 +14,9 @@ export async function POST(req) {
     const method = payment_method;
     let customerId = null;
     let isNewCustomer = false;
+    let generatedPassword = null;
+    let generatedUsername = null;
+    let loginPayload = null;
 
     const existingUser = await api.get(`/customers?email=${billing.email}`);
 
@@ -52,6 +57,8 @@ export async function POST(req) {
         });
         customerId = newUser.data.id;
         isNewCustomer = true;
+        generatedPassword = password;
+        generatedUsername = username;
       } catch (error) {
         return NextResponse.json({ valid: false, message: "Failed to create your account", order: false }, { status: 201 });
       }
@@ -139,7 +146,35 @@ export async function POST(req) {
       }
     }
 
-    return NextResponse.json({ valid: true, message: "Order created successfully!", order: orderResponse.data }, { status: 201 });
+    if (generatedPassword && generatedUsername) {
+      try {
+        const wpRes = await axios.post("https://solarhouse.pk/wp-json/jwt-auth/v1/token", {
+          username: generatedUsername,
+          password: generatedPassword,
+        });
+        const token = wpRes.data?.token;
+
+        if (token) {
+          const cookieStore = await cookies();
+          cookieStore.set("_auth_token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 60 * 60 * 24 * 30,
+            path: "/",
+          });
+          loginPayload = { valid: true, message: wpRes.data };
+        }
+      } catch (autoLoginError) {
+        console.error("Auto login failed:", autoLoginError.response?.data || autoLoginError.message);
+        loginPayload = { valid: false, message: "Auto login failed" };
+      }
+    }
+
+    return NextResponse.json(
+      { valid: true, message: "Order created successfully!", order: orderResponse.data, login: loginPayload },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Order creation error:", error.response?.data || error.message);
 

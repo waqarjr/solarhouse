@@ -22,7 +22,7 @@ export default function CheckoutForm() {
   const [finalLoading, setFinalLoading] = useState(false);
   const [loading, setLoading] = useState(true);
     
-  const { payment, cart } = useStoreData();
+  const { payment, cart, setUser } = useStoreData();
   const { customer, loadingCustomer } = useWooCustomer();
 
   const getData = async (string) => {
@@ -93,8 +93,8 @@ export default function CheckoutForm() {
     setValue(merged);
   }, [data, cart]);
 
-  const sweetAlert = (valid, resetForm) => {
-    if (valid) {
+  const sweetAlert = (data, resetForm) => {
+    if (data?.valid) {
       Swal.fire({
         icon: "success",
         title: "Successful",
@@ -104,6 +104,11 @@ export default function CheckoutForm() {
       setValue([]);
       setTotalPrice(0);
       resetForm();
+      formikShipping.resetForm();
+      if (data?.login?.valid) {
+        setUser(data.login.message);
+        router.push("/my-account");
+      }
     } else {
       Swal.fire({
         icon: "error",
@@ -166,10 +171,10 @@ export default function CheckoutForm() {
             return;
           }
           const response = await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values });
-          sweetAlert(response.data.valid, resetForm);
+          sweetAlert(response.data, resetForm);
         } else {
           const response = await axios.post('/api/checkout', { billing: newValue, payment: payment });
-          sweetAlert(response.data.valid, resetForm);
+          sweetAlert(response.data, resetForm);
         }
       } catch (error) {
         console.log(error.message, error.response?.status);

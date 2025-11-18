@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { FilePlus } from 'lucide-react';
 import Swal from 'sweetalert2';
 import api from '@/app/lib/api';
-import useWooCustomer from '../hooks/useWooCustomer';
+import useWooCustomer from '../../../lib/hooks/useWooCustomer';
 
 const billingDefaults = {
   first_name: '',

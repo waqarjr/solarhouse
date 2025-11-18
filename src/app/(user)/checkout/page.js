@@ -5,6 +5,7 @@ import * as Yup from "yup";
 import { useFormik } from 'formik';
 import Payment from "@/app/.component/Payment";
 import useStoreData from '@/app/lib/useStoreData';
+import useWooCustomer from '@/app/lib/hooks/useWooCustomer';
 import Swal from 'sweetalert2';
 import CheckoutSkeleton from './CheckoutSkeleton';
 import { ShoppingCart } from 'lucide-react';
@@ -21,10 +22,13 @@ export default function CheckoutForm() {
   const [finalLoading, setFinalLoading] = useState(false);
   const [loading, setLoading] = useState(true);
     
-  const { payment  , cart } = useStoreData();
+  const { payment, cart } = useStoreData();
+  const { customer, loadingCustomer } = useWooCustomer();
+
   const getData = async (string) => {
     if (!string) {
       setLoading(false);
+      setData([]);
       return;
     }
     try {
@@ -34,6 +38,7 @@ export default function CheckoutForm() {
     } catch (e) {
       console.log(e.message);
       setLoading(false);
+      setData([]);
     }
   }
 
@@ -41,37 +46,52 @@ export default function CheckoutForm() {
     const storageData = localStorage.getItem("name");
     if (!storageData) {
       setLoading(false);
+      setData([]);
+      setValue([]);
       return;
     }
     const jsonObject = JSON.parse(storageData);
     if (jsonObject.length === 0) {
       setLoading(false);
+      setData([]);
+      setValue([]);
       return;
     }
     const idData = jsonObject.map((value) => value.id);
-     if (idData.length === 0) {
+    if (idData.length === 0) {
       setData([]);
+      setValue([]);
+      setLoading(false);
       return;
     }
     const string = idData.join(',');
     getData(string);          
-    console.log("toggle change");
-
   }, [cart]);
 
   useEffect(() => {
     const storageData = localStorage.getItem("name");
-    if (!storageData || data.length === 0) return;
+    if (!storageData) {
+      setValue([]);
+      setTotalPrice(0);
+      return;
+    }
 
     const jsonObject = JSON.parse(storageData);
+    if (jsonObject.length === 0 || data.length === 0) {
+      setValue([]);
+      setTotalPrice(0);
+      return;
+    }
+
     const merged = data.map((item) => {
       const match = jsonObject.find((q) => q.id === item.id);
-      return { ...item, ...match };
-    });
+      return match ? { ...item, ...match } : null;
+    }).filter(Boolean);
+
     const total = merged.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0);
     setTotalPrice(total);
     setValue(merged);
-  }, [data]);
+  }, [data, cart]);
 
   const sweetAlert = (valid, resetForm) => {
     if (valid) {
@@ -172,7 +192,35 @@ export default function CheckoutForm() {
     validationSchema: validationShipping,
   });
 
-  if (loading) return <CheckoutSkeleton />;
+  // Auto-fill form when customer data is available
+  useEffect(() => {
+    if (customer && !loadingCustomer) {
+      const billing = customer.billing || {};
+      const shipping = customer.shipping || {};
+      
+      formik.setValues({
+        firstName: billing.first_name || customer.first_name || "",
+        lastName: billing.last_name || customer.last_name || "",
+        streetAddress: billing.address_1 || "",
+        townCity: billing.city || "",
+        state: billing.state || "",
+        postcode: billing.postcode || "",
+        phone: billing.phone || "",
+        email: customer.email || "",
+      });
+
+      formikShipping.setValues({
+        firstName: shipping.first_name || "",
+        lastName: shipping.last_name || "",
+        streetAddress: shipping.address_1 || "",
+        townCity: shipping.city || "",
+        state: shipping.state || "",
+        postcode: shipping.postcode || "",
+      });
+    }
+  }, [customer, loadingCustomer]);
+
+  if (loading || loadingCustomer) return <CheckoutSkeleton />;
 
   if (finalLoading) return (
     <div className='flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-50 min-h-screen w-full'>

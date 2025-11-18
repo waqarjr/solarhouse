@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import api from '@/app/lib/api';
 import useStoreData from '@/app/lib/useStoreData';
-import useWooCustomer from '../hooks/useWooCustomer';
+import useWooCustomer from '../../../lib/hooks/useWooCustomer';
 
 const initialState = {
   firstName: '',
@@ -101,15 +101,6 @@ const EditAccountPage = () => {
       await api.put(`/customers/${customer.id}`, payload);
       await refreshCustomer();
 
-      try {
-        const verifyRes = await axios.post("/api/auth/verify");
-        if (verifyRes.data.valid) {
-          setUser(verifyRes.data.message);
-        }
-      } catch (err) {
-        console.warn("Unable to refresh session user:", err.message);
-      }
-
       Swal.fire("Success", "Account details updated successfully.", "success");
     } catch (error) {
       console.error("Failed to update account:", error.message);
@@ -143,24 +134,15 @@ const EditAccountPage = () => {
           <label className="block text-sm font-medium text-gray-900 mb-2">
             First name <span className="text-red-600">*</span>
           </label>
-          <input
-            type="text"
-            name="firstName"
-            value={values.firstName}
-            onChange={handleChange}
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+          <input type="text" name="firstName" value={values.firstName} onChange={handleChange}
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"/>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-900 mb-2">
             Last name <span className="text-red-600">*</span>
           </label>
-          <input
-            type="text"
-            name="lastName"
-            value={values.lastName}
-            onChange={handleChange}
+          <input type="text" name="lastName" value={values.lastName} onChange={handleChange}
             className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -178,7 +160,7 @@ const EditAccountPage = () => {
           className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         <p className="text-sm text-gray-600 mt-2">
-          This will be how your name will be displayed in the account section and in reviews.
+          This will be how your name will be displayed in the account section and in reviews and will not be able to change this name.
         </p>
       </div>
 

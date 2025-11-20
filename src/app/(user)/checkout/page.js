@@ -171,9 +171,11 @@ export default function CheckoutForm() {
             return;
           }
           const response = await axios.post('/api/checkout', { billing: newValue, shipping: formikShipping.values });
+          router.push("/my-account");
           sweetAlert(response.data, resetForm);
         } else {
           const response = await axios.post('/api/checkout', { billing: newValue, payment: payment });
+          router.push("/my-account");
           sweetAlert(response.data, resetForm);
         }
       } catch (error) {
@@ -197,7 +199,7 @@ export default function CheckoutForm() {
     validationSchema: validationShipping,
   });
 
-  // Auto-fill form when customer data is available
+  // Auto-fill form when customer data is available 
   useEffect(() => {
     if (customer && !loadingCustomer) {
       const billing = customer.billing || {};
@@ -236,7 +238,7 @@ export default function CheckoutForm() {
           <div className="w-5 h-5 rounded-full bg-blue-600 animate-bounce [animation-delay:.4s]"></div>
         </div>
         <p className="text-gray-600 font-medium">Processing your order...</p>
-      </div>
+    </div>
     </div>
   );
 
